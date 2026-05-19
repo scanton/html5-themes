@@ -50,7 +50,7 @@ float snowLayer(vec2 uv, float t, float asp,
 
       // y in full screen space: travels from 1.12 (just above top) down to -0.12
       // (just below bottom).  fract() wrap jumps from -0.12 → 1.12 — both off-screen.
-      float py_raw = fract(ry - t * spd * (0.80 + rs * 0.40));
+      float py_raw = fract(ry + t * spd * (0.80 + rs * 0.40));
       float py = 1.12 - py_raw * 1.24;
 
       // Lateral wind: global gust + per-particle sinusoidal weave
