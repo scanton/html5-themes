@@ -14,7 +14,7 @@ export default createGLVariation('Pool Water', `
 void main() {
   vec2 uv  = gl_FragCoord.xy / u_resolution;
   float asp = u_resolution.x / u_resolution.y;
-  vec2 p = (uv - 0.5) * vec2(asp, 1.0) * 2.2;
+  vec2 p = (uv - 0.5) * vec2(asp, 1.0) * 1.4;
 
   float t = u_time * 0.28;
 
