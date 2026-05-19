@@ -10,10 +10,14 @@ import neonCity       from './variations/07-neon-city.js';
 import smoke          from './variations/08-smoke.js';
 import candy          from './variations/09-candy.js';
 import northernFire   from './variations/10-northern-fire.js';
+import poolWater      from './variations/11-pool-water.js';
+import snowfall       from './variations/12-snowfall.js';
+import beer           from './variations/13-beer.js';
 
 const variations = [
   dreamyBlobs, lavaLamp, aurora, liquidMetal, sunsetDrift,
   oceanDepths, neonCity, smoke, candy, northernFire,
+  poolWater, snowfall, beer,
 ];
 
 // ─── state ───────────────────────────────────────────────────────────────────
