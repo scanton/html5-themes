@@ -15,11 +15,23 @@ import snowfall       from './variations/12-snowfall.js';
 import beer           from './variations/13-beer.js';
 import tieDye         from './variations/14-tie-dye.js';
 import hearts         from './variations/15-hearts.js';
+import halloween      from './variations/16-halloween.js';
+import christmas      from './variations/17-christmas.js';
+import fireworks      from './variations/18-fireworks.js';
+import cherryBlossoms from './variations/19-cherry-blossoms.js';
+import confetti       from './variations/20-confetti.js';
+import underwater     from './variations/21-underwater.js';
+import autumnLeaves   from './variations/22-autumn-leaves.js';
+import starfield      from './variations/23-starfield.js';
+import candlelight    from './variations/24-candlelight.js';
+import rainbowRays    from './variations/25-rainbow-rays.js';
 
 const variations = [
   dreamyBlobs, lavaLamp, aurora, liquidMetal, sunsetDrift,
   oceanDepths, neonCity, smoke, candy, northernFire,
   poolWater, snowfall, beer, tieDye, hearts,
+  halloween, christmas, fireworks, cherryBlossoms, confetti,
+  underwater, autumnLeaves, starfield, candlelight, rainbowRays,
 ];
 
 // ─── state ───────────────────────────────────────────────────────────────────
