@@ -26,8 +26,10 @@ export default createGLVariation('Hearts', `
 // the heart tip is at the bottom, cleft at the top, width ≈ 2.
 // We scale/flip so the natural orientation looks like a classic heart.
 float heartSDF(vec2 p) {
-  // Flip y so the tip points down (falling naturally)
-  p.y = -p.y + 0.3;
+  // Natural orientation: lobes at top (y > 0), tip at bottom (y < 0).
+  // Shift up slightly so the visual centre of the heart aligns with the
+  // particle position rather than the geometric centroid.
+  p.y -= 0.20;
 
   float a = p.x * p.x + p.y * p.y - 1.0;
   return a * a * a - p.x * p.x * p.y * p.y * p.y;
