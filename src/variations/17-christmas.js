@@ -19,11 +19,7 @@ void main() {
   float t   = u_time * 0.22;
 
   // ── Deep pine-green background ────────────────────────────────
-  // Directional FBM simulates pine-needle texture (high x freq)
-  float needles = fbm(vec2(p.x * 5.5, p.y * 2.6) + vec2(t * 0.018, 0.0));
-  vec3 bgDark   = vec3(0.01, 0.05, 0.02);
-  vec3 bgMid    = vec3(0.03, 0.11, 0.04);
-  vec3 col      = mix(bgDark, bgMid, needles * 0.65 + 0.10);
+  vec3 col = vec3(0.01, 0.05, 0.02);
 
   // Warm candlelight glow drifting up from bottom-centre
   float candleX = exp(-pow((uv.x - 0.50) * 2.0, 2.0));
@@ -55,7 +51,7 @@ void main() {
     vec3 lc3;
     if      (lc < 0.28) lc3 = vec3(1.00, 0.10, 0.09);   // red
     else if (lc < 0.54) lc3 = vec3(1.00, 0.72, 0.07);   // gold
-    else if (lc < 0.68) lc3 = vec3(1.00, 0.93, 0.78);   // warm white
+    else if (lc < 0.68) lc3 = vec3(0.72, 0.18, 1.00);   // purple
     else if (lc < 0.82) lc3 = vec3(0.14, 0.90, 0.22);   // green
     else                lc3 = vec3(0.18, 0.52, 1.00);    // blue
 
@@ -82,11 +78,11 @@ void main() {
     float twinkle = 0.68 + 0.32 * sin(u_time * (0.7 + lts * 1.4) + ltp * 6.28);
 
     vec3 lc3;
-    if      (lc < 0.28) lc3 = vec3(0.92, 0.08, 0.07);
-    else if (lc < 0.54) lc3 = vec3(0.94, 0.68, 0.05);
-    else if (lc < 0.68) lc3 = vec3(0.96, 0.89, 0.70);
-    else if (lc < 0.82) lc3 = vec3(0.10, 0.84, 0.16);
-    else                lc3 = vec3(0.14, 0.44, 0.96);
+    if      (lc < 0.28) lc3 = vec3(0.92, 0.08, 0.07);   // red
+    else if (lc < 0.54) lc3 = vec3(0.94, 0.68, 0.05);   // gold
+    else if (lc < 0.68) lc3 = vec3(0.68, 0.14, 0.96);   // purple
+    else if (lc < 0.82) lc3 = vec3(0.10, 0.84, 0.16);   // green
+    else                lc3 = vec3(0.14, 0.44, 0.96);    // blue
 
     // Pure gaussian blob — very blurry, no hard edge
     float d    = length(p - lpos);
@@ -112,11 +108,6 @@ void main() {
     }
   }
   col += clamp(snowBright, 0.0, 1.0) * vec3(1.0, 0.97, 0.90) * 0.92;
-
-  // ── Gold sparkle glints ───────────────────────────────────────
-  float sparkle = fbm(p * 9.0 + vec2(t * 0.18, -t * 0.14));
-  sparkle = pow(max(sparkle - 0.67, 0.0) * 4.2, 3.2);
-  col += sparkle * vec3(1.0, 0.88, 0.36) * 0.55;
 
   // ── Vignette ─────────────────────────────────────────────────
   float vig = length((uv - 0.5) * vec2(asp, 1.0));

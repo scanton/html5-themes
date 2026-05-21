@@ -30,80 +30,60 @@ void main() {
   vec2  uv  = gl_FragCoord.xy / u_resolution;
   float asp = u_resolution.x / u_resolution.y;
   vec2  p   = uv * vec2(asp, 1.0);
-  float t   = u_time * 0.14;
+  float t   = u_time * 0.50;   // global time — fast enough for visible sweep
 
   // Light source: just above the screen, centred
-  vec2  src     = vec2(0.50 * asp, 1.15);
-  vec2  toSrc   = p - src;
-  float rayDist = length(toSrc);
-  float rayAngle= atan(toSrc.x, -toSrc.y);   // 0 = straight down from source
+  vec2  src      = vec2(0.50 * asp, 1.10);
+  vec2  toSrc    = p - src;
+  float rayDist  = length(toSrc);
+  float rayAngle = atan(toSrc.x, -toSrc.y);
 
-  // ── Bright sky background ─────────────────────────────────────
-  vec3 skyTop = vec3(0.98, 0.97, 0.95);   // warm near-white
-  vec3 skyBot = vec3(0.88, 0.92, 1.00);   // cool blue tint at bottom
-  vec3 col    = mix(skyTop, skyBot, uv.y * 0.7);
+  // ── Deep dusk background — rays need darkness to be visible ───
+  vec3 skyTop = vec3(0.02, 0.01, 0.08);
+  vec3 skyBot = vec3(0.06, 0.03, 0.14);
+  vec3 col    = mix(skyTop, skyBot, pow(1.0 - uv.y, 1.4));
 
-  // Source radial glow
-  col += vec3(1.00, 0.96, 0.82) * 0.55 * exp(-rayDist * rayDist * 3.5);
-
-  // Soft cloud haze
-  float haze = fbm(p * 1.8 + vec2(t * 0.06, 0.0));
-  col += haze * 0.06 * vec3(1.0, 0.95, 0.90);
+  // Subtle drifting cloud texture
+  float cloud = fbm(p * 1.4 + vec2(t * 0.08, 0.0));
+  col += cloud * 0.04 * vec3(0.30, 0.15, 0.50);
 
   // ── Ray angular density ───────────────────────────────────────
-  // Product of two sinusoids at coprime frequencies → irregular beams
-  float freq1 = 7.0;
-  float freq2 = 11.0;
-
-  // FBM warp of the angle so edges are organic, not ruler-straight
-  float angleWarp = fbm(vec2(rayAngle * 1.6 + t * 0.22,
-                              rayDist  * 2.2 + t * 0.18)) * 0.18;
+  // FBM warp of the angle — drifts visibly over time
+  float angleWarp   = fbm(vec2(rayAngle * 1.8 + t * 0.35,
+                               rayDist  * 2.5 + t * 0.28)) * 0.22;
   float warpedAngle = rayAngle + angleWarp;
 
-  // Phase-shifted oscillations that drift over time
-  float phase1 = t * 0.28;
-  float phase2 = t * 0.19 + 1.57;
-
-  float s1 = sin(warpedAngle * freq1 + phase1) * 0.5 + 0.5;
-  float s2 = sin(warpedAngle * freq2 - phase2) * 0.5 + 0.5;
-  float rayDensity = pow(s1 * s2, 1.6);   // combined beam mask, sharpened
+  // Product of two coprime sinusoids — phases sweep at a visible rate
+  float s1 = sin(warpedAngle * 7.0  + t * 0.80) * 0.5 + 0.5;
+  float s2 = sin(warpedAngle * 11.0 - t * 0.55 + 1.57) * 0.5 + 0.5;
+  float rayDensity = pow(s1 * s2, 1.4);
 
   // ── Ray radial falloff ────────────────────────────────────────
-  // Rays are bright near the source, fade with distance
-  float radFade = exp(-rayDist * 1.8);
-  // Also fade the very centre (source corona) to avoid a hard bright dot
-  float innerFade = smoothstep(0.0, 0.18, rayDist);
+  float radFade   = exp(-rayDist * 1.4);
+  float innerFade = smoothstep(0.0, 0.15, rayDist);
+  float rayMask   = rayDensity * radFade * innerFade;
 
-  float rayMask = rayDensity * radFade * innerFade;
+  // ── Rainbow colour — HSV spectrum cycling with the sweep ──────
+  float hue1   = fract(warpedAngle / 6.28318 + t * 0.12);
+  float hue2   = fract(warpedAngle / 6.28318 - rayDist * 0.6 + t * 0.20);
+  vec3 rayCol1 = hsv2rgb(vec3(hue1, 0.90, 1.0));
+  vec3 rayCol2 = hsv2rgb(vec3(hue2, 0.70, 1.0));
+  vec3 rayCol  = mix(rayCol1, rayCol2, 0.30);
 
-  // ── Rainbow colour along each ray ────────────────────────────
-  // Primary hue: angle-based spectrum that rotates slowly
-  float hue1 = fract(warpedAngle / 6.28318 + t * 0.08);
-  // Secondary hue: faster radial shimmer layer
-  float hue2 = fract(warpedAngle / 6.28318 - rayDist * 0.8 + t * 0.22);
+  // Bleach near source — pure white corona
+  float desat = exp(-rayDist * 3.5);
+  rayCol = mix(rayCol, vec3(1.0), desat * 0.60);
 
-  vec3 rayCol1 = hsv2rgb(vec3(hue1, 0.72, 1.0));
-  vec3 rayCol2 = hsv2rgb(vec3(hue2, 0.55, 1.0));
-  vec3 rayCol  = mix(rayCol1, rayCol2, 0.35);
+  // ── Composite — additive over dark background ──────────────────
+  col += rayCol * rayMask * 1.20;
 
-  // Desaturate rays closer to the source (bleached by brightness)
-  float desat = exp(-rayDist * 4.5);
-  rayCol = mix(rayCol, vec3(1.0), desat * 0.55);
+  // Bright source corona glow
+  col += vec3(0.90, 0.80, 1.00) * 0.50 * exp(-rayDist * rayDist * 4.0);
 
-  // ── Composite ─────────────────────────────────────────────────
-  // Add rays over bright background (additive blend)
-  col += rayCol * rayMask * 0.72;
-
-  // Mist at the base — pastel ground haze
-  float mistY = smoothstep(0.25, 0.0, uv.y);
-  float mistHue = fract(t * 0.06);
-  vec3  mistCol = hsv2rgb(vec3(mistHue, 0.28, 1.0));
-  col = mix(col, mistCol, mistY * 0.35);
-
-  // Soft sparkle on the rays
-  float sparkle = fbm(p * 10.0 + vec2(t * 0.35, -t * 0.28));
-  sparkle = pow(max(sparkle - 0.65, 0.0) * 4.5, 3.0);
-  col += sparkle * rayMask * 0.55;
+  // Soft colour mist at the base, hue cycling
+  float mistY   = smoothstep(0.30, 0.0, uv.y);
+  float mistHue = fract(t * 0.10);
+  col = mix(col, hsv2rgb(vec3(mistHue, 0.55, 0.60)), mistY * 0.40);
 
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

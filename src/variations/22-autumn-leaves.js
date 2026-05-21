@@ -150,9 +150,9 @@ void main() {
   // ── Leaf layers ───────────────────────────────────────────────
   vec3 farCol, midCol, nearCol;
 
-  float far  = leafLayer(uv, t, asp, 40.0, 0.018, 0.016, 0.0065, 1.00, 0.30, farCol);
-  float mid  = leafLayer(uv, t, asp, 18.0, 0.042, 0.036, 0.0155, 6.37, 0.70, midCol);
-  float near = leafLayer(uv, t, asp,  7.0, 0.085, 0.065, 0.0350, 11.9, 1.00, nearCol);
+  float far  = leafLayer(uv, t, asp, 40.0, 0.054, 0.016, 0.0130, 1.00, 0.30, farCol);
+  float mid  = leafLayer(uv, t, asp, 18.0, 0.126, 0.036, 0.0310, 6.37, 0.70, midCol);
+  float near = leafLayer(uv, t, asp,  7.0, 0.255, 0.065, 0.0700, 11.9, 1.00, nearCol);
 
   col = mix(col, farCol,  far  * 0.68);
   col = mix(col, midCol,  mid  * 0.86);

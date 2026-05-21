@@ -39,30 +39,30 @@ export default {
 
     const blobs = [
       // Hot pink — 2 blobs
-      { w:280, h:265, c:'rgba(255,5,140,0.92)',   top:'0%',  left:'8%',  anim:'cy-a 3.8s' },
-      { w:160, h:170, c:'rgba(255,30,160,0.88)',  top:'50%', left:'55%', anim:'cy-e 2.9s 0.5s' },
+      { w:280, h:265, c:'rgba(255,5,140,0.92)',   top:'0%',  left:'8%',  anim:'cy-a 30.4s' },
+      { w:160, h:170, c:'rgba(255,30,160,0.88)',  top:'50%', left:'55%', anim:'cy-e 23.2s 0.5s' },
       // Electric yellow
-      { w:260, h:245, c:'rgba(255,230,0,0.92)',   top:'28%', left:'52%', anim:'cy-b 3.2s' },
-      { w:145, h:155, c:'rgba(255,240,30,0.88)',  top:'70%', left:'20%', anim:'cy-f 2.6s 1s' },
+      { w:260, h:245, c:'rgba(255,230,0,0.92)',   top:'28%', left:'52%', anim:'cy-b 25.6s' },
+      { w:145, h:155, c:'rgba(255,240,30,0.88)',  top:'70%', left:'20%', anim:'cy-f 20.8s 1s' },
       // Sky blue
-      { w:245, h:260, c:'rgba(0,100,255,0.90)',   top:'48%', left:'18%', anim:'cy-c 4.5s' },
-      { w:155, h:145, c:'rgba(30,130,255,0.85)',  top:'5%',  left:'65%', anim:'cy-g 3.4s 0.8s' },
+      { w:245, h:260, c:'rgba(0,100,255,0.90)',   top:'48%', left:'18%', anim:'cy-c 36.0s' },
+      { w:155, h:145, c:'rgba(30,130,255,0.85)',  top:'5%',  left:'65%', anim:'cy-g 27.2s 0.8s' },
       // Orange-red
-      { w:235, h:250, c:'rgba(255,75,0,0.90)',    top:'8%',  left:'38%', anim:'cy-d 4.0s' },
-      { w:140, h:150, c:'rgba(255,100,20,0.85)',  top:'68%', left:'68%', anim:'cy-h 2.8s 1.5s' },
+      { w:235, h:250, c:'rgba(255,75,0,0.90)',    top:'8%',  left:'38%', anim:'cy-d 32.0s' },
+      { w:140, h:150, c:'rgba(255,100,20,0.85)',  top:'68%', left:'68%', anim:'cy-h 22.4s 1.5s' },
       // Neon green
-      { w:225, h:235, c:'rgba(0,230,80,0.88)',    top:'60%', left:'-2%', anim:'cy-e 3.6s 0.3s' },
-      { w:130, h:140, c:'rgba(20,240,100,0.84)',  top:'18%', left:'82%', anim:'cy-a 2.7s 2s' },
+      { w:225, h:235, c:'rgba(0,230,80,0.88)',    top:'60%', left:'-2%', anim:'cy-e 28.8s 0.3s' },
+      { w:130, h:140, c:'rgba(20,240,100,0.84)',  top:'18%', left:'82%', anim:'cy-a 21.6s 2s' },
       // Magenta/fuchsia
-      { w:215, h:225, c:'rgba(220,0,255,0.88)',   top:'35%', left:'72%', anim:'cy-f 3.9s 0.6s' },
-      { w:125, h:130, c:'rgba(240,20,255,0.84)',  top:'80%', left:'45%', anim:'cy-b 2.5s 1.2s' },
+      { w:215, h:225, c:'rgba(220,0,255,0.88)',   top:'35%', left:'72%', anim:'cy-f 31.2s 0.6s' },
+      { w:125, h:130, c:'rgba(240,20,255,0.84)',  top:'80%', left:'45%', anim:'cy-b 20.0s 1.2s' },
       // Cyan accent
-      { w:205, h:215, c:'rgba(0,220,240,0.86)',   top:'75%', left:'80%', anim:'cy-c 3.3s 1.8s' },
-      { w:120, h:125, c:'rgba(20,235,250,0.82)',  top:'38%', left:'5%',  anim:'cy-d 2.4s 0.9s' },
+      { w:205, h:215, c:'rgba(0,220,240,0.86)',   top:'75%', left:'80%', anim:'cy-c 26.4s 1.8s' },
+      { w:120, h:125, c:'rgba(20,235,250,0.82)',  top:'38%', left:'5%',  anim:'cy-d 19.2s 0.9s' },
       // Vermillion
-      { w:195, h:200, c:'rgba(255,40,40,0.88)',   top:'15%', left:'20%', anim:'cy-g 3.7s 2.2s' },
+      { w:195, h:200, c:'rgba(255,40,40,0.88)',   top:'15%', left:'20%', anim:'cy-g 29.6s 2.2s' },
       // Chartreuse
-      { w:185, h:195, c:'rgba(180,255,0,0.86)',   top:'88%', left:'10%', anim:'cy-h 3.1s 1.7s' },
+      { w:185, h:195, c:'rgba(180,255,0,0.86)',   top:'88%', left:'10%', anim:'cy-h 24.8s 1.7s' },
     ];
 
     blobs.forEach(({ w, h, c, top, left, anim }) => {

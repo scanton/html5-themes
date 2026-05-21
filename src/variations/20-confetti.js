@@ -23,6 +23,9 @@ float boxSDF(vec2 p, vec2 b, float r) {
   return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
 }
 
+// cross of 2D vectors (scalar z component) — named cross2d to avoid built-in clash
+float cross2d(vec2 a, vec2 b) { return a.x * b.y - a.y * b.x; }
+
 // Five-pointed star SDF
 float starSDF(vec2 p, float r1, float r2) {
   float a  = atan(p.y, p.x);
@@ -30,18 +33,14 @@ float starSDF(vec2 p, float r1, float r2) {
   a = mod(a, 6.28318 / n);
   a = abs(a - 3.14159 / n);
   vec2 q = length(p) * vec2(cos(a), sin(a));
-  // Alternate between inner and outer radius
   float inner = r2;
   float outer = r1;
   vec2  va = outer * vec2(cos(3.14159 / n), sin(3.14159 / n));
   vec2  vb = inner * vec2(1.0, 0.0);
   vec2  edge = vb - va;
   float t2 = clamp(dot(q - va, edge) / dot(edge, edge), 0.0, 1.0);
-  return length(q - va - edge * t2) * sign(cross(vec2(q - va), edge));
+  return length(q - va - edge * t2) * sign(cross2d(q - va, edge));
 }
-
-// cross of 2D vectors (scalar z component)
-float cross(vec2 a, vec2 b) { return a.x * b.y - a.y * b.x; }
 
 // Confetti colour palette (8 bright saturated colours)
 vec3 confettiColor(float idx) {
@@ -158,9 +157,9 @@ void main() {
   // ── Three confetti layers ─────────────────────────────────────
   vec3 farCol, midCol, nearCol;
 
-  float far  = confettiLayer(uv, t, asp, 48.0, 0.024, 0.010, 0.0055, 1.00, farCol);
-  float mid  = confettiLayer(uv, t, asp, 22.0, 0.055, 0.025, 0.0130, 6.71, midCol);
-  float near = confettiLayer(uv, t, asp,  9.0, 0.110, 0.050, 0.0300, 12.3, nearCol);
+  float far  = confettiLayer(uv, t, asp, 48.0, 0.080, 0.010, 0.0037, 1.00, farCol);
+  float mid  = confettiLayer(uv, t, asp, 22.0, 0.180, 0.025, 0.0087, 6.71, midCol);
+  float near = confettiLayer(uv, t, asp,  9.0, 0.360, 0.050, 0.0200, 12.3, nearCol);
 
   col = mix(col, farCol,  far  * 0.72);
   col = mix(col, midCol,  mid  * 0.90);

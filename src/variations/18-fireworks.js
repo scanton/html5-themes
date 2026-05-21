@@ -39,17 +39,18 @@ vec3 firework(vec2 p, float asp, float t, float seed) {
   float dist = length(diff);
 
   if (phase < 0.10) {
-    // ── 1. Launch ──────────────────────────────────────────────
+    // ── 1. Launch — shell is 1/3 original size ─────────────────
     float prog = phase / 0.10;
     float dotY = 0.04 + prog * (by - 0.04);
     float ldist = length(p - vec2(bx, dotY));
-    col += burstCol * exp(-ldist * ldist * 1800.0) * 4.0;
-    // Fading trail: thin vertical strip below the dot
-    float trailLen = 0.10;
-    float tMask = smoothstep(0.006, 0.0, abs(p.x - bx));
+    // Coefficient 9× larger → radius 1/3 of original
+    col += burstCol * exp(-ldist * ldist * 16200.0) * 4.0;
+    // Trail: 1/3 width and 1/3 length
+    float trailLen = 0.033;
+    float tMask = smoothstep(0.002, 0.0, abs(p.x - bx));
     float tFade = clamp((p.y - (dotY - trailLen)) / trailLen, 0.0, 1.0);
-    float tAbove = clamp((dotY - p.y) / 0.008, 0.0, 1.0);
-    col += burstCol * tMask * tFade * tFade * tAbove * 1.0;
+    float tAbove = clamp((dotY - p.y) / 0.003, 0.0, 1.0);
+    col += burstCol * tMask * tFade * tFade * tAbove * 0.8;
 
   } else if (phase < 0.44) {
     // ── 2. Burst + 3. Sparkle ──────────────────────────────────
@@ -81,12 +82,8 @@ vec3 firework(vec2 p, float asp, float t, float seed) {
     float sparkMask = smoothstep(burstR * 1.25, 0.0, dist);
     col += burstCol * spark * sparkMask * fade * 2.0;
 
-  } else if (phase < 0.92) {
-    // ── 4. Afterglow ───────────────────────────────────────────
-    float ap   = (phase - 0.44) / 0.48;
-    float glow = exp(-dist * dist * 20.0) * exp(-ap * ap * 5.5) * 0.38;
-    col += burstCol * glow;
   }
+  // phase 0.44–1.0: dark / dormant (firework has fully faded)
 
   return col;
 }
@@ -101,28 +98,38 @@ void main() {
   vec3 col = mix(vec3(0.01, 0.01, 0.07), vec3(0.03, 0.05, 0.16),
                  pow(uv.y, 0.55));
 
-  // Twinkling stars
-  vec2  starCell = floor(uv * vec2(220.0, 128.0));
-  float star     = hash(starCell);
-  star = pow(max(star - 0.975, 0.0) * 40.0, 2.5);
-  star *= 0.50 + 0.50 * sin(u_time * (1.5 + hash(starCell + 0.4) * 3.8));
-  col += star * vec3(0.86, 0.90, 1.00);
+  // Stars: 180 fixed random positions — no grid, no repeating pattern.
+  // Each star's (x,y) comes from independent hash calls with unique seeds,
+  // so placement is uncorrelated and looks genuinely scattered.
+  float starBright = 0.0;
+  for (int i = 0; i < 180; i++) {
+    float fi = float(i);
+    vec2  sp = vec2(hash(vec2(fi, 73.1)), hash(vec2(fi, 29.7)));
+    float sb = 0.35 + hash(vec2(fi, 47.3)) * 0.65;
+    float sd = length(uv - sp);
+    starBright += exp(-sd * sd * 320000.0) * sb;
+  }
+  col += clamp(starBright, 0.0, 1.5) * vec3(0.88, 0.92, 1.00);
 
   // ── City skyline silhouette ───────────────────────────────────
-  float bCol    = floor(uv.x * 24.0);
-  float skyline = hash(vec2(bCol, 99.0)) * 0.14 + 0.05;
-  float inBldg  = 1.0 - smoothstep(skyline - 0.003, skyline + 0.003, uv.y);
+  // 32 building columns — narrower, more urban
+  float bCol    = floor(uv.x * 32.0);
+  float skyline = hash(vec2(bCol, 99.0)) * 0.13 + 0.05;
+  float inBldg  = 1.0 - smoothstep(skyline - 0.002, skyline + 0.002, uv.y);
 
-  // Window lights: random grid, only inside buildings
-  vec2  winCell  = floor(uv * vec2(96.0, 38.0));
+  // Window lights: fine grid so windows are small dots, not large blocks
+  vec2  winGS    = uv * vec2(200.0, 70.0);
+  vec2  winCell  = floor(winGS);
+  vec2  winFrac  = fract(winGS) - 0.5;
   float winHash  = hash(winCell);
-  float win      = winHash > 0.80 ? 1.0 : 0.0;
-  win *= inBldg;
-  // Flicker slowly
-  win *= 0.80 + 0.20 * sin(u_time * (0.4 + winHash * 2.0) + winHash * 6.28);
+  // Only ~12% of cells lit; gaussian within cell → soft window glow
+  float hasWin   = max(winHash - 0.88, 0.0) * 8.33;
+  float winGlow  = smoothstep(0.28, 0.0, length(winFrac)) * hasWin;
+  winGlow *= inBldg;
+  winGlow *= 0.75 + 0.25 * sin(u_time * (0.3 + winHash * 1.8) + winHash * 6.28);
 
-  vec3 bldgCol = vec3(0.04, 0.05, 0.10);
-  bldgCol += win * vec3(0.68, 0.60, 0.24) * 0.55;
+  vec3 bldgCol = vec3(0.05, 0.06, 0.12);   // dark blue-grey silhouette
+  bldgCol += winGlow * vec3(0.75, 0.65, 0.28) * 0.60;
   col = mix(col, bldgCol, inBldg);
 
   // ── Fireworks (8 asynchronous bursts) ────────────────────────

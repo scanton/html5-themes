@@ -27,39 +27,39 @@ float starCross(vec2 p, float r) {
   return arm * exp(-length(p) / (r * 2.5));
 }
 
-// One shooting star — returns glow at p for this seed.
+// One shooting star — tail anchored at origin, head moves away (trail grows).
 vec3 shootingStar(vec2 p, float t, float seed) {
-  // Random direction, position, timing
   float period = 5.0 + hash(vec2(seed, 1.0)) * 7.0;
   float phase  = fract(t / period + hash(vec2(seed, 2.0)));
+  if (phase > 0.28) return vec3(0.0);
 
-  // Only visible during the first 25% of its cycle
-  if (phase > 0.25) return vec3(0.0);
-
-  float prog   = phase / 0.25;   // 0→1 while visible
+  float prog   = phase / 0.28;
   float startX = hash(vec2(seed, 3.0));
-  float startY = 0.35 + hash(vec2(seed, 4.0)) * 0.55;
-  float angle  = -0.38 - hash(vec2(seed, 5.0)) * 0.40;   // slightly downward
+  float startY = 0.30 + hash(vec2(seed, 4.0)) * 0.60;
+  float angle  = -0.35 - hash(vec2(seed, 5.0)) * 0.45;
 
-  float tailLen = 0.28 + hash(vec2(seed, 6.0)) * 0.20;
-  float headX   = startX + prog * cos(angle) * 0.45;
-  float headY   = startY + prog * sin(angle) * 0.45;
+  vec2 dir    = vec2(cos(angle), sin(angle));
+  vec2 origin = vec2(startX, startY);
+  vec2 head   = origin + dir * prog * 0.55;   // head moves; trail grows behind it
 
-  // Distance from fragment to the streak line segment
-  vec2 a = vec2(startX, startY);
-  vec2 b = vec2(headX, headY);
-  vec2 pa = p - a, ba = b - a;
-  float hh = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-  vec2  closest = a + ba * hh;
-  float dStreak = length(p - closest);
+  // Segment from fixed origin to moving head
+  vec2  seg    = head - origin;
+  float segLen = max(length(seg), 0.0001);
+  vec2  pa     = p - origin;
+  float hh     = clamp(dot(pa, seg) / dot(seg, seg), 0.0, 1.0);
+  float dStreak= length(p - origin - seg * hh);
 
-  // Width falloff + fade along tail (bright at head, dim at tail)
-  float along = dot(pa, normalize(ba)) / length(ba);
-  float fade  = clamp(1.0 - along, 0.0, 1.0);   // brighter toward head
-  fade *= (1.0 - prog * prog);                   // overall fade as star passes
-  float glow  = exp(-dStreak * dStreak * 2200.0) * fade * 2.8;
+  // along: 0 at origin (tail), 1 at head — drives brightness
+  float along = clamp(dot(pa, dir) / segLen, 0.0, 1.0);
 
-  return vec3(0.92, 0.96, 1.0) * glow;
+  // Envelope: quick ramp-in, hold, gradual fade
+  float env = smoothstep(0.0, 0.12, prog) * (1.0 - smoothstep(0.65, 1.0, prog));
+
+  // Half the previous radius → 4× gaussian coefficient
+  float streak   = exp(-dStreak * dStreak * 12800.0) * pow(along, 1.5) * env * 4.0;
+  float headGlow = exp(-dot(p - head, p - head) * 36000.0) * env * 3.0;
+
+  return vec3(0.93, 0.96, 1.00) * (streak + headGlow);
 }
 
 void main() {
@@ -100,32 +100,51 @@ void main() {
   float coreDist= length(p - coreCen);
   col += vec3(0.40, 0.70, 1.00) * exp(-coreDist * coreDist * 5.5) * 0.55;
 
-  // ── Far star layer — dense tiny dots ─────────────────────────
-  vec2  fc   = floor(uv * vec2(300.0, 175.0));
-  float fStar= hash(fc);
-  fStar = pow(max(fStar - 0.960, 0.0) * 25.0, 1.8);
-  col += fStar * vec3(0.70, 0.74, 0.85);
+  // ── Far star layer — point-within-cell gaussian dots ─────────
+  // Each grid cell may contain one star at a random position inside it.
+  // Distance from fragment to that position drives a tight gaussian →
+  // soft point, never a solid square.
+  vec2 fG = vec2(220.0, 128.0);
+  for (int fi = -1; fi <= 1; fi++) {
+    for (int fj = -1; fj <= 1; fj++) {
+      vec2  fc  = floor(uv * fG) + vec2(float(fi), float(fj));
+      float fh  = hash(fc);
+      float fv  = max(fh - 0.968, 0.0) / 0.032;
+      vec2  fp  = (fc + vec2(hash(fc + 7.3), hash(fc + 3.9))) / fG;
+      float fd  = length(uv - fp);
+      col += fv * 0.55 * exp(-fd * fd * 260000.0) * vec3(0.72, 0.76, 0.90);
+    }
+  }
 
-  // ── Mid star layer — twinkling ────────────────────────────────
-  vec2  mc    = floor(uv * vec2(140.0, 82.0));
-  float mStar = hash(mc);
-  mStar = pow(max(mStar - 0.940, 0.0) * 17.0, 2.0);
-  mStar *= 0.55 + 0.45 * sin(u_time * (1.2 + hash(mc + 0.5) * 3.5) + hash(mc + 1.0) * 6.28);
-  col += mStar * vec3(0.80, 0.85, 1.00);
+  // ── Mid star layer — larger, twinkling ───────────────────────
+  vec2 mG = vec2(75.0, 43.0);
+  for (int mi = -1; mi <= 1; mi++) {
+    for (int mj = -1; mj <= 1; mj++) {
+      vec2  mc  = floor(uv * mG) + vec2(float(mi), float(mj));
+      float mh  = hash(mc);
+      float mv  = max(mh - 0.920, 0.0) / 0.080;
+      vec2  mp  = (mc + vec2(hash(mc + 9.1), hash(mc + 4.7))) / mG;
+      float md  = length(uv - mp);
+      float tw  = 0.55 + 0.45 * sin(u_time * (1.2 + hash(mc + 2.1) * 3.5) + hash(mc + 5.7) * 6.28);
+      col += mv * 0.90 * tw * exp(-md * md * 55000.0) * vec3(0.84, 0.90, 1.00);
+    }
+  }
 
   // ── Near star layer — bright with diffraction cross ───────────
-  vec2  nc2  = floor(uv * vec2(55.0, 32.0));
-  float nStar= hash(nc2);
-  if (nStar > 0.92) {
-    float nBright = pow((nStar - 0.92) * 12.5, 1.8);
-    nBright *= 0.65 + 0.35 * sin(u_time * (0.8 + hash(nc2 + 0.7) * 2.2) + hash(nc2 + 1.5) * 6.28);
-    // Centre of this star in screen space
-    vec2 sCen = (nc2 + 0.5) / vec2(55.0, 32.0);
-    vec2 sDiff = (uv - sCen) * vec2(asp, 1.0);
-    float starR = 0.0025 + (nStar - 0.92) * 0.018;
-    float disc  = 1.0 - smoothstep(starR * 0.5, starR, length(sDiff));
-    float cross = starCross(sDiff, starR);
-    col += nBright * (disc + cross * 0.65) * vec3(0.90, 0.92, 1.00) * 2.0;
+  vec2 nG = vec2(28.0, 16.0);
+  for (int ni = -1; ni <= 1; ni++) {
+    for (int nj = -1; nj <= 1; nj++) {
+      vec2  nc   = floor(uv * nG) + vec2(float(ni), float(nj));
+      float nh   = hash(nc);
+      float nv   = max(nh - 0.860, 0.0) / 0.140;
+      vec2  np   = (nc + vec2(hash(nc + 11.3), hash(nc + 6.7))) / nG;
+      vec2  ndiff= (uv - np) * vec2(asp, 1.0);
+      float tw   = 0.65 + 0.35 * sin(u_time * (0.8 + hash(nc + 3.5) * 2.2) + hash(nc + 8.1) * 6.28);
+      float starR= 0.003 + nv * 0.004;
+      float disc = exp(-dot(ndiff, ndiff) * 20000.0);
+      float crs  = starCross(ndiff, starR);
+      col += nv * 1.8 * tw * (disc + crs * 0.80) * vec3(0.90, 0.93, 1.00);
+    }
   }
 
   // ── Shooting stars ────────────────────────────────────────────
