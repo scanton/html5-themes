@@ -72,11 +72,15 @@ float snowflakeSDF(vec2 p) {
 }
 
 // ── One depth layer — strip-based, full-screen-height travel ─────
-// numS = horizontal strips.  spd = fall speed (screen-heights/sec).
-// wnd = lateral wind amplitude (screen fraction).
-// flkR = flake radius in screen fraction.  seed = layer seed.
+// numS    = horizontal strips.
+// spd     = fall speed (screen-heights / sec).
+// wnd     = lateral wind amplitude (screen fraction).
+// flkR    = flake radius in screen fraction.
+// seed    = layer seed.
+// flipAmt = 0 → no flip, 1 → full coin-flip (Y-axis 3-D rotation).
 float snowLayer(vec2 uv, float t, float asp,
-                float numS, float spd, float wnd, float flkR, float seed) {
+                float numS, float spd, float wnd, float flkR,
+                float seed, float flipAmt) {
   float sx     = uv.x * numS;
   float cell_x = floor(sx);
   float gust   = sin(t * 0.20 + seed * 2.31) * wnd;
@@ -92,7 +96,9 @@ float snowLayer(vec2 uv, float t, float asp,
       float rs = hash(vec2(nc +  5.91,  sk));   // speed variation
       float rw = hash(vec2(nc + 11.37,  sk));   // wind variation
       float rp = hash(vec2(nc + 23.13,  sk));   // wind phase
-      float rr = hash(vec2(nc + 37.41,  sk));   // rotation
+      float rr = hash(vec2(nc + 37.41,  sk));   // Z-axis orientation
+      float rf = hash(vec2(nc + 41.73,  sk));   // coin-flip phase (random start)
+      float rs2= hash(vec2(nc + 57.19,  sk));   // flip speed variation
 
       // Fall: py goes from 1.12 (above screen) down to -0.12 (below screen).
       // fract() wrap jumps from -0.12 → 1.12, both off-screen → no pop-in.
@@ -105,18 +111,28 @@ float snowLayer(vec2 uv, float t, float asp,
       // Screen-space offset from fragment to flake centre
       vec2 diff = vec2((uv.x - px) * asp, uv.y - py);
 
-      // Early cull: flake can't reach further than ~1.4 × its radius
-      if (length(diff) < flkR * 1.5) {
-        // Map to local space (arm length = 1.0)
-        vec2 lp = diff / flkR;
+      if (length(diff) < flkR * 1.6) {
+        // ── Coin-flip (Y-axis 3-D rotation) ──────────────────────
+        // |cos(θ)| gives the perspective squish: 1 = face-on, ~0 = edge-on.
+        // Applied to the screen-space X offset before local mapping, so the
+        // snowflake appears to flatten then open back up — a rolling flip.
+        // Random starting phase rf ensures each flake begins mid-cycle.
+        float flipSpeed = 0.28 + rs2 * 0.22;   // 0.28–0.50 rad/s (slow)
+        float squish    = abs(cos(t * flipSpeed + rf * 6.28318));
+        // Blend between no-flip (1.0) and full-flip based on flipAmt.
+        // Clamp minimum to 0.10 so the flake never completely disappears.
+        squish = mix(1.0, max(squish, 0.10), flipAmt);
 
-        // Random rotation — each flake has a unique orientation
-        float rot = rr * 1.04720;  // [0, π/3] (D6 period)
+        // Apply squish to X before normalising → Y-axis 3-D rotation effect
+        vec2 lp = vec2(diff.x / (squish + 0.001), diff.y) / flkR;
+
+        // Random Z-axis orientation (each flake faces a unique direction)
+        float rot = rr * 1.04720;   // [0, π/3] (D6 period)
         float cr = cos(rot), sr = sin(rot);
         lp = vec2(cr * lp.x + sr * lp.y, -sr * lp.x + cr * lp.y);
 
         float sdf = snowflakeSDF(lp);
-        float aa  = 0.08;   // edge smoothness in local units
+        float aa  = 0.08;
         bright += smoothstep(aa, -aa, sdf);
       }
     }
@@ -143,12 +159,12 @@ void main() {
   col = mix(col, vec3(0.66, 0.72, 0.80), smoothstep(0.10, 0.0, uv.y) * 0.50);
 
   // ── Three depth layers: distant → near ────────────────────────
-  // Far:  60 strips × 2 = 120 particles, tiny slow flakes (~2.4 px)
-  float far  = snowLayer(uv, t, asp, 60.0, 0.024, 0.015, 0.0030, 1.00);
-  // Mid:  24 strips × 2 = 48 particles, medium flakes (~5 px)
-  float mid  = snowLayer(uv, t, asp, 24.0, 0.052, 0.035, 0.0065, 4.73);
-  // Near: 10 strips × 2 = 20 particles, large fast flakes (~14 px)
-  float near = snowLayer(uv, t, asp, 10.0, 0.105, 0.060, 0.0175, 8.31);
+  // Far:  60 strips × 2 = 120 particles, tiny slow flakes (~2.4 px) — no flip (too small)
+  float far  = snowLayer(uv, t, asp, 60.0, 0.024, 0.015, 0.0030, 1.00, 0.0);
+  // Mid:  24 strips × 2 = 48 particles, medium flakes (~5 px) — subtle flip
+  float mid  = snowLayer(uv, t, asp, 24.0, 0.052, 0.035, 0.0065, 4.73, 0.55);
+  // Near: 10 strips × 2 = 20 particles, large fast flakes (~14 px) — full flip
+  float near = snowLayer(uv, t, asp, 10.0, 0.105, 0.060, 0.0175, 8.31, 1.0);
 
   vec3 snowCol = vec3(1.0);
   col = mix(col, snowCol, far  * 0.42);
