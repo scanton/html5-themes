@@ -13,11 +13,13 @@ import northernFire   from './variations/10-northern-fire.js';
 import poolWater      from './variations/11-pool-water.js';
 import snowfall       from './variations/12-snowfall.js';
 import beer           from './variations/13-beer.js';
+import tieDye         from './variations/14-tie-dye.js';
+import hearts         from './variations/15-hearts.js';
 
 const variations = [
   dreamyBlobs, lavaLamp, aurora, liquidMetal, sunsetDrift,
   oceanDepths, neonCity, smoke, candy, northernFire,
-  poolWater, snowfall, beer,
+  poolWater, snowfall, beer, tieDye, hearts,
 ];
 
 // ─── state ───────────────────────────────────────────────────────────────────
