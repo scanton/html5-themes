@@ -123,8 +123,9 @@ float snowLayer(vec2 uv, float t, float asp,
         // Clamp minimum to 0.10 so the flake never completely disappears.
         squish = mix(1.0, max(squish, 0.10), flipAmt);
 
-        // Apply squish to X before normalising → Y-axis 3-D rotation effect
-        vec2 lp = vec2(diff.x / (squish + 0.001), diff.y) / flkR;
+        // Apply squish to Y before normalising → X-axis 3-D rotation effect
+        // (flake tips forward/back as it falls, like a leaf catching air)
+        vec2 lp = vec2(diff.x, diff.y / (squish + 0.001)) / flkR;
 
         // Random Z-axis orientation (each flake faces a unique direction)
         float rot = rr * 1.04720;   // [0, π/3] (D6 period)
