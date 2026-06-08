@@ -74,6 +74,36 @@ const spriteLabels = [
   'Geometric Shapes', 'Music Notes', 'Paper Planes', 'Autumn Leaves',
 ];
 
+// ── Presets ───────────────────────────────────────────────────────────────────
+// Each entry selects a background index (into variations[]) and a sprite index
+// (into sprites[], where 0 = None).
+
+const PRESETS = [
+  { name: 'Woodstock',       bg: 13, sprite: 10 },  // Tie Dye + Butterflies
+  { name: 'Love Rain',       bg: 14, sprite:  2 },  // Hearts + Hearts
+  { name: 'Music Festival',  bg: 16, sprite: 18 },  // Fireworks + Music Notes
+  { name: 'Winter',          bg: 11, sprite:  3 },  // Snowfall + Snowflakes
+  { name: 'Suds',            bg: 12, sprite:  1 },  // Beer + Bubbles
+  { name: 'Holiday',         bg: 15, sprite:  4 },  // Christmas + Stars & Sparkles
+  { name: 'Party Time',      bg: 17, sprite:  5 },  // Confetti + Balloons
+  { name: 'Autumn Leaves',   bg: 18, sprite: 20 },  // Autumn Leaves + Autumn Leaves
+  { name: 'Blossom Pool',    bg: 10, sprite: 11 },  // Pool Water + Cherry Blossoms
+  { name: 'Magic Spell',     bg:  9, sprite: 14 },  // Northern Fire + Spell Runes
+  { name: 'Stardust',        bg: 19, sprite:  8 },  // Starfield + Magic Dust
+  { name: 'Cosmic Ether',    bg: 21, sprite: 15 },  // Rainbow Rays + Jack-o-Lantern Sparks
+  { name: 'Candy Rain',      bg:  8, sprite:  6 },  // Candy + Confetti
+  { name: 'Will-o-Wisp',     bg:  7, sprite:  9 },  // Smoke + Fireflies
+  { name: 'Neon Stars',      bg:  6, sprite: 16 },  // Neon City + Comets
+  { name: 'Geometry Pool',   bg:  5, sprite: 17 },  // Ocean Depths + Geometric Shapes
+  { name: 'Sunset Sparkle',  bg:  4, sprite:  8 },  // Sunset Drift + Magic Dust
+  { name: 'Liquid Stars',    bg:  3, sprite:  4 },  // Liquid Metal + Stars & Sparkles
+  { name: 'Northern Lights', bg:  2, sprite: 18 },  // Aurora Borealis + Music Notes
+  { name: 'Molten Lava',     bg:  1, sprite:  9 },  // Lava Lamp + Fireflies
+  { name: 'Dream Seeds',     bg:  0, sprite: 12 },  // Dreamy Blobs + Dandelion Seeds
+  { name: 'Broken World',    bg:  7, sprite: 13 },  // Smoke + Crystal Shards
+  { name: 'Christmas Snow',  bg: 15, sprite:  3 },  // Christmas + Snowflakes
+];
+
 // ─── state ────────────────────────────────────────────────────────────────────
 
 const preview = document.getElementById('preview');
@@ -150,6 +180,28 @@ document.getElementById('btn-reset').addEventListener('click', () => {
   spriteLayer?.reset();
 });
 
+// ─── switch preset ────────────────────────────────────────────────────────────
+
+function switchPreset(index) {
+  const p = PRESETS[index];
+  const wasRunning = isRunning;
+  const prevBgIdx  = currentIdx;
+
+  isRunning = true;          // ensure animation runs when preset is applied
+  switchTo(p.bg);
+  switchSprite(p.sprite);
+
+  // switchTo creates a fresh CompositingLayer but only starts it when isRunning
+  // was already true before the call — start it if the bg changed or was stopped.
+  if (prevBgIdx !== p.bg || !wasRunning) {
+    compositing?.start();
+  }
+
+  document.querySelectorAll('.preset-btn').forEach((b, i) =>
+    b.classList.toggle('active', i === index)
+  );
+}
+
 // ─── build tab panels ─────────────────────────────────────────────────────────
 
 const bgPanel = document.getElementById('bg-panel');
@@ -168,6 +220,16 @@ spriteLabels.forEach((label, i) => {
   btn.textContent = label;
   btn.addEventListener('click', () => switchSprite(i));
   spritePanel.appendChild(btn);
+});
+
+const presetBar = document.getElementById('preset-bar');
+PRESETS.forEach((p, i) => {
+  const btn = document.createElement('button');
+  btn.className   = 'preset-btn';
+  btn.textContent = p.name;
+  btn.title       = `${variations[p.bg].name}  +  ${spriteLabels[p.sprite]}`;
+  btn.addEventListener('click', () => switchPreset(i));
+  presetBar.appendChild(btn);
 });
 
 // ─── initial load ─────────────────────────────────────────────────────────────

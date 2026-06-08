@@ -109,6 +109,57 @@ h1 {
   color: #cdb8ff;
 }
 
+/* ── Preset strip ──────────────────────────────────────── */
+.preset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 1060px;
+  width: 100%;
+}
+.preset-label {
+  font-size: 0.60rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.22);
+  padding: 0 2px;
+}
+#preset-bar {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.10) transparent;
+}
+#preset-bar::-webkit-scrollbar { height: 3px; }
+#preset-bar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 4px; }
+
+.preset-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.09);
+  background: transparent;
+  color: rgba(255,255,255,0.38);
+  cursor: pointer;
+  font-size: 0.70rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  transition: background 0.13s, color 0.13s, border-color 0.13s;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.preset-btn:hover {
+  background: rgba(255,195,60,0.10);
+  border-color: rgba(255,195,60,0.30);
+  color: rgba(255,210,90,0.90);
+}
+.preset-btn.active {
+  background: rgba(255,180,40,0.16);
+  border-color: rgba(255,190,60,0.45);
+  color: #ffd060;
+}
+
 /* ── Controls ──────────────────────────────────────────── */
 .controls { display: flex; gap: 10px; }
 .btn {
@@ -148,6 +199,11 @@ h1 {
   <div class="panel" id="sprite-panel">
     <div class="panel-label">Sprites</div>
   </div>
+</div>
+
+<div class="preset-section">
+  <div class="preset-label">Presets</div>
+  <div id="preset-bar"></div>
 </div>
 
 <div class="controls">
