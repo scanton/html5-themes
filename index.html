@@ -126,14 +126,10 @@ h1 {
 }
 #preset-bar {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 7px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.10) transparent;
 }
-#preset-bar::-webkit-scrollbar { height: 3px; }
-#preset-bar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 4px; }
 
 .preset-btn {
   padding: 5px 14px;
