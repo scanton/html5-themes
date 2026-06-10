@@ -1,157 +1,187 @@
-// Skulls — tumbling skull-and-crossbones icons for Rock & Roll.
-// Each skull has an oval cranium, round eye sockets, a nose cavity, and
-// crossed bones below. They spin freely and drift in all directions.
+// Skulls — classic jolly-roger skull & crossbones, properly drawn.
+// Crossbones sit BEHIND the skull. The skull has a domed cranium,
+// flared cheekbones, a narrower jaw with separated teeth, deep shaded
+// eye sockets, and a radial bone-shading gradient. Tumbles slowly.
 
 export const name = 'Skulls';
 
 function rand(min, max) { return min + Math.random() * (max - min); }
 
 const COLORS = [
-  { fill: '#e8e8e0', stroke: '#444' },   // bone white
-  { fill: '#d0c8b8', stroke: '#333' },   // aged ivory
-  { fill: '#ff3333', stroke: '#880000' },// red
-  { fill: '#c0ff40', stroke: '#405500' },// acid green
-  { fill: '#888898', stroke: '#222' },   // grey
+  { light: '#f4f0e4', mid: '#ddd6c2', dark: '#6b6354', socket: '#1c1a16' }, // bone
+  { light: '#ffffff', mid: '#e8e8ee', dark: '#70707e', socket: '#16161c' }, // white
+  { light: '#ffd9a8', mid: '#e8b070', dark: '#7e5828', socket: '#241404' }, // aged gold
+  { light: '#ff8080', mid: '#e84848', dark: '#701414', socket: '#1c0404' }, // blood red
+  { light: '#d2ff80', mid: '#a8e848', dark: '#4a7014', socket: '#101c04' }, // toxic green
 ];
 
 function makeSkull(w, h, spreadXY) {
-  const col   = COLORS[Math.floor(rand(0, COLORS.length))];
-  const size  = rand(20, 40);
+  const col  = COLORS[Math.floor(rand(0, COLORS.length))];
+  const size = rand(26, 46);
   const angle = rand(0, Math.PI * 2);
-  const speed = rand(50, 120);
+  const speed = rand(34, 80);
   return {
-    x:        spreadXY ? rand(size, w - size) : rand(size, w - size),
-    y:        spreadXY ? rand(size, h - size) : h + size + rand(0, 60),
+    x:        rand(size, w - size),
+    y:        spreadXY ? rand(size, h - size) : h + size * 2 + rand(0, 60),
     size, col,
     vx:       Math.cos(angle) * speed,
-    vy:       Math.sin(angle) * speed - 30,
-    rot:      rand(0, Math.PI * 2),
-    rotRate:  rand(-2.2, 2.2),
+    vy:       -Math.abs(Math.sin(angle)) * speed - 18,  // drift upward
+    // bounded rocking, not full flips — keeps skulls readable
+    baseRot:  rand(-0.25, 0.25),
+    rock:     rand(0, Math.PI * 2),
+    rockRate: rand(0.5, 1.3),
+    rockAmp:  rand(0.18, 0.45),
     life:     0,
-    maxLife:  rand(6, 14),
+    maxLife:  rand(7, 15),
   };
 }
 
 export function init(w, h) {
   const skulls = [];
-  for (let i = 0; i < 14; i++) skulls.push(makeSkull(w, h, true));
+  for (let i = 0; i < 10; i++) skulls.push(makeSkull(w, h, true));
   return { skulls, w, h, timer: 0 };
 }
 
 export function update(state, dt) {
   const { skulls, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.7 && skulls.length < 20) {
+  if (state.timer > 0.9 && skulls.length < 16) {
     skulls.push(makeSkull(w, h, false));
     state.timer = 0;
   }
   for (let i = skulls.length - 1; i >= 0; i--) {
     const s = skulls[i];
     s.life += dt;
-    s.rot  += s.rotRate * dt;
+    s.rock += s.rockRate * dt;
     s.x    += s.vx * dt;
     s.y    += s.vy * dt;
-    s.vy   += 30 * dt; // gentle gravity drift upward cancelled by vy offset
-    // Wrap
     if (s.x < -s.size * 2) s.x = w + s.size;
     if (s.x > w + s.size * 2) s.x = -s.size;
-    if (s.life > s.maxLife) skulls.splice(i, 1);
+    if (s.y < -s.size * 3 || s.life > s.maxLife) skulls.splice(i, 1);
   }
 }
 
-function drawSkull(ctx, s) {
-  const { size: sz, col, rot, life, maxLife } = s;
+// one bone: rounded shaft with a double knob at each end, angled `ang`
+function drawBone(ctx, ang, len, sz, col) {
+  ctx.save();
+  ctx.rotate(ang);
+  const shaftW = sz * 0.16;
+  const knobR  = sz * 0.115;
+  const half   = len / 2;
+  // shaft
+  ctx.beginPath();
+  ctx.roundRect(-half, -shaftW / 2, len, shaftW, shaftW / 2);
+  ctx.fillStyle = col.mid;
+  ctx.fill();
+  ctx.strokeStyle = col.dark;
+  ctx.lineWidth = Math.max(0.8, sz * 0.030);
+  ctx.stroke();
+  // double knobs (classic bone ends)
+  [-half, half].forEach(ex => {
+    [-1, 1].forEach(side => {
+      ctx.beginPath();
+      ctx.arc(ex, side * knobR * 0.78, knobR, 0, Math.PI * 2);
+      ctx.fillStyle = col.mid;
+      ctx.fill();
+      ctx.strokeStyle = col.dark;
+      ctx.lineWidth = Math.max(0.8, sz * 0.030);
+      ctx.stroke();
+    });
+  });
+  ctx.restore();
+}
+
+// skull outline: dome, temples, flared cheekbones, narrower jaw
+function skullPath(ctx, s) {
+  ctx.beginPath();
+  ctx.moveTo(0, -s * 0.66);                                            // crown
+  ctx.bezierCurveTo( s * 0.42, -s * 0.66,  s * 0.60, -s * 0.40,  s * 0.58, -s * 0.10); // right dome
+  ctx.bezierCurveTo( s * 0.57,  s * 0.04,  s * 0.52,  s * 0.10,  s * 0.50,  s * 0.16); // temple in
+  ctx.bezierCurveTo( s * 0.56,  s * 0.20,  s * 0.56,  s * 0.28,  s * 0.46,  s * 0.32); // cheekbone flare
+  ctx.bezierCurveTo( s * 0.38,  s * 0.36,  s * 0.34,  s * 0.38,  s * 0.32,  s * 0.46); // into jaw
+  ctx.bezierCurveTo( s * 0.30,  s * 0.58,  s * 0.18,  s * 0.64,  0,        s * 0.64);  // jaw bottom
+  ctx.bezierCurveTo(-s * 0.18,  s * 0.64, -s * 0.30,  s * 0.58, -s * 0.32,  s * 0.46);
+  ctx.bezierCurveTo(-s * 0.34,  s * 0.38, -s * 0.38,  s * 0.36, -s * 0.46,  s * 0.32);
+  ctx.bezierCurveTo(-s * 0.56,  s * 0.28, -s * 0.56,  s * 0.20, -s * 0.50,  s * 0.16);
+  ctx.bezierCurveTo(-s * 0.52,  s * 0.10, -s * 0.57,  s * 0.04, -s * 0.58, -s * 0.10);
+  ctx.bezierCurveTo(-s * 0.60, -s * 0.40, -s * 0.42, -s * 0.66,  0,       -s * 0.66);
+  ctx.closePath();
+}
+
+function drawSkull(ctx, sk) {
+  const { size: s, col, baseRot, rock, rockAmp, life, maxLife } = sk;
+  const rot = baseRot + Math.sin(rock) * rockAmp;
   const fadeIn  = Math.min(life / 0.5, 1);
   const fadeOut = Math.min((maxLife - life) / 1.0, 1);
   ctx.globalAlpha = fadeIn * fadeOut;
 
   ctx.save();
-  ctx.translate(s.x, s.y);
+  ctx.translate(sk.x, sk.y);
   ctx.rotate(rot);
 
-  const cw = sz * 0.68;   // cranium half-width
-  const ch = sz * 0.56;   // cranium half-height
-  const jawH = sz * 0.22; // jaw depth
+  // ── crossbones behind ─────────────────────────────────────
+  drawBone(ctx,  Math.PI / 4, s * 1.9, s, col);
+  drawBone(ctx, -Math.PI / 4, s * 1.9, s, col);
 
-  // Cranium
-  ctx.beginPath();
-  ctx.ellipse(0, -sz * 0.08, cw, ch, 0, 0, Math.PI * 2);
-  ctx.fillStyle   = col.fill;
+  // ── cranium with bone shading ─────────────────────────────
+  skullPath(ctx, s);
+  const grad = ctx.createRadialGradient(-s * 0.18, -s * 0.30, s * 0.1,
+                                         0, 0, s * 0.85);
+  grad.addColorStop(0, col.light);
+  grad.addColorStop(0.7, col.mid);
+  grad.addColorStop(1, col.dark);
+  ctx.fillStyle = grad;
   ctx.fill();
-  ctx.strokeStyle = col.stroke;
-  ctx.lineWidth   = Math.max(1, sz * 0.045);
+  ctx.strokeStyle = col.dark;
+  ctx.lineWidth   = Math.max(1, s * 0.040);
+  ctx.lineJoin    = 'round';
   ctx.stroke();
 
-  // Jaw / cheekbones (flat bottom)
-  ctx.beginPath();
-  ctx.rect(-cw * 0.72, ch * 0.32, cw * 1.44, jawH);
-  ctx.fillStyle = col.fill;
-  ctx.fill();
-  ctx.strokeStyle = col.stroke;
-  ctx.lineWidth   = Math.max(0.8, sz * 0.036);
-  ctx.strokeRect(-cw * 0.72, ch * 0.32, cw * 1.44, jawH);
-
-  // Eye sockets
-  const eyeR  = sz * 0.17;
-  const eyeY  = -sz * 0.10;
-  [-cw * 0.38, cw * 0.38].forEach(ex => {
+  // ── eye sockets: big angled ovals, deep shadow with inner glint ──
+  [[-1, 0], [1, 0]].forEach(([side]) => {
+    ctx.save();
+    ctx.translate(side * s * 0.26, -s * 0.06);
+    ctx.rotate(side * 0.28);
     ctx.beginPath();
-    ctx.ellipse(ex, eyeY, eyeR, eyeR * 1.1, 0, 0, Math.PI * 2);
-    ctx.fillStyle = col.stroke;
+    ctx.ellipse(0, 0, s * 0.165, s * 0.205, 0, 0, Math.PI * 2);
+    const eg = ctx.createRadialGradient(0, s * 0.05, 0, 0, 0, s * 0.21);
+    eg.addColorStop(0, col.socket);
+    eg.addColorStop(0.8, col.socket);
+    eg.addColorStop(1, col.dark);
+    ctx.fillStyle = eg;
     ctx.fill();
+    ctx.restore();
   });
 
-  // Nose cavity (upside-down heart shape: two circles)
-  const noseR = sz * 0.09;
+  // ── nasal cavity: inverted-heart ──────────────────────────
   ctx.beginPath();
-  ctx.arc(-noseR * 0.7, sz * 0.14, noseR, 0, Math.PI * 2);
-  ctx.fillStyle = col.stroke;
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc( noseR * 0.7, sz * 0.14, noseR, 0, Math.PI * 2);
+  ctx.moveTo(0, s * 0.30);
+  ctx.bezierCurveTo(-s * 0.10, s * 0.22, -s * 0.085, s * 0.10, 0, s * 0.135);
+  ctx.bezierCurveTo( s * 0.085, s * 0.10,  s * 0.10, s * 0.22, 0, s * 0.30);
+  ctx.closePath();
+  ctx.fillStyle = col.socket;
   ctx.fill();
 
-  // Teeth — 4 small rects along jaw bottom
-  const toothW = cw * 0.24;
-  const toothH = sz * 0.11;
-  const toothY = ch * 0.32 + jawH - toothH;
-  for (let t = -1.5; t <= 1.5; t++) {
+  // ── teeth: upper row on the jaw with separation lines ─────
+  const tw = s * 0.105, th = s * 0.155, ty = s * 0.475;
+  for (let i = -2; i <= 2; i++) {
     ctx.beginPath();
-    ctx.rect(t * toothW * 0.92 - toothW * 0.44, toothY, toothW * 0.88, toothH);
-    ctx.strokeStyle = col.stroke;
-    ctx.lineWidth   = Math.max(0.5, sz * 0.025);
+    ctx.roundRect(i * tw - tw * 0.44, ty, tw * 0.88, th, tw * 0.22);
+    ctx.fillStyle = col.light;
+    ctx.fill();
+    ctx.strokeStyle = col.dark;
+    ctx.lineWidth = Math.max(0.6, s * 0.022);
     ctx.stroke();
   }
 
-  // Crossbones below
-  const boneL = sz * 0.72;
-  const boneY = ch * 0.32 + jawH + sz * 0.28;
-  const endR  = sz * 0.12;
-  [Math.PI / 4, -Math.PI / 4].forEach(ang => {
-    const dx = Math.cos(ang) * boneL * 0.5;
-    const dy = Math.sin(ang) * boneL * 0.5;
-    // Shaft
-    ctx.beginPath();
-    ctx.moveTo(-dx, boneY - dy);
-    ctx.lineTo( dx, boneY + dy);
-    ctx.strokeStyle = col.fill;
-    ctx.lineWidth   = sz * 0.13;
-    ctx.lineCap     = 'butt';
-    ctx.stroke();
-    ctx.strokeStyle = col.stroke;
-    ctx.lineWidth   = Math.max(0.8, sz * 0.04);
-    ctx.stroke();
-    // End knobs
-    [[-dx, boneY - dy], [dx, boneY + dy]].forEach(([ex, ey]) => {
-      ctx.beginPath();
-      ctx.arc(ex, ey, endR, 0, Math.PI * 2);
-      ctx.fillStyle = col.fill;
-      ctx.fill();
-      ctx.strokeStyle = col.stroke;
-      ctx.lineWidth   = Math.max(0.7, sz * 0.036);
-      ctx.stroke();
-    });
-  });
+  // brow shading line above sockets
+  ctx.beginPath();
+  ctx.moveTo(-s * 0.40, -s * 0.245);
+  ctx.quadraticCurveTo(0, -s * 0.33, s * 0.40, -s * 0.245);
+  ctx.strokeStyle = col.dark;
+  ctx.lineWidth = Math.max(0.7, s * 0.024);
+  ctx.globalAlpha *= 0.45;
+  ctx.stroke();
 
   ctx.restore();
 }
