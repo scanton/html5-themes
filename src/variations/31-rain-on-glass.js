@@ -9,6 +9,22 @@ import { createGLVariation } from '../engine.js';
 export default createGLVariation('Rain on Glass', `
 float S(float a, float b, float x) { return smoothstep(a, b, x); }
 
+// One layer of distant rain falling in air beyond the glass:
+// faint vertical streaks plunging fast, slightly wind-slanted.
+float rainAir(vec2 p, float t, float cols, float speed, float seed) {
+  // wind slant: shear x by height
+  float x = p.x + (1.0 - p.y) * 0.06;
+  float ci = floor(x * cols);
+  float cn = hash(vec2(ci * 5.13, seed));
+  float lane = (ci + 0.5 + (cn - 0.5) * 0.7) / cols;
+  float head = 1.15 - fract(t * (speed + cn * speed * 0.6) + cn * 17.0) * 1.35;
+  float tail = p.y - head;                      // streak extends above head
+  float len = 0.06 + cn * 0.07;
+  float seg = S(-0.004, 0.004, tail) * S(len, len * 0.25, tail);
+  float dx = abs(x - lane) * cols;
+  return S(0.10, 0.02, dx) * seg;
+}
+
 // Blurred night-city bokeh behind the glass. 'sharp' = 1 inside a
 // droplet (crisp discs), 0 on the wet pane (soft mush).
 vec3 cityBg(vec2 p, float asp, float t, float sharp) {
@@ -32,25 +48,26 @@ vec3 cityBg(vec2 p, float asp, float t, float sharp) {
     col += lc * m * (0.30 + 0.40 * h3) * tw;
   }
 
+  // distant rain falling through the air — two depth layers, faint,
+  // picked out by the city glow
+  float rain = rainAir(p, t, 26.0, 0.55, 1.0) * 0.10
+             + rainAir(p, t, 42.0, 0.80, 9.0) * 0.06;
+  col += vec3(0.55, 0.65, 0.80) * rain;
+
   // distant lightning: rare multi-flicker flashes lighting the sky
   float storm = sin(t * 0.41) * sin(t * 0.733 + 1.7) * sin(t * 0.281 + 4.0);
   float fl = pow(max(storm, 0.0), 8.0) * (0.70 + 0.30 * sin(t * 47.0));
   col += vec3(0.55, 0.62, 0.90) * fl * (1.4 - p.y * 0.6);
+  // lightning silhouettes the falling rain
+  col += vec3(0.7, 0.78, 1.0) * rain * fl * 6.0;
 
   return col;
 }
 
-// Runnel path for column ci at height y: straight nearly all the way,
-// with sparse kinks (cubed noise) and at most one or two short wiggle
-// bursts per traversal — the wiggle only switches on inside rare noise
-// zones, so most of the run is dead straight.
+// Runnel path for column ci: dead straight — each drop picks a lane
+// within its column and runs straight down it. No meander, no wiggle.
 float runnelX(float ci, float y, float cn, float colW) {
-  float mn = vnoise(vec2(y * 4.0, cn * 91.0)) - 0.5;
-  float kink = mn * mn * mn * 8.0;                   // flat runs, rare bends
-  // wiggle envelope: ~0 almost everywhere, briefly 1 in rare patches
-  float env = smoothstep(0.62, 0.78, vnoise(vec2(y * 2.2, cn * 53.0)));
-  float wig = sin(y * 42.0 + cn * 6.28) * 0.09 * env;
-  return (ci + 0.5) * colW + (kink * 0.42 + wig) * colW;
+  return (ci + 0.5 + (cn - 0.5) * 0.5) * colW;
 }
 
 // Contribution of column ci's drop/trail at pixel p.
