@@ -40,12 +40,16 @@ vec3 cityBg(vec2 p, float asp, float t, float sharp) {
   return col;
 }
 
-// Runnel path for column ci at height y: mostly straight, with sparse
-// kinks where the glass resists (cubed noise) PLUS a gentle wiggle.
+// Runnel path for column ci at height y: straight nearly all the way,
+// with sparse kinks (cubed noise) and at most one or two short wiggle
+// bursts per traversal — the wiggle only switches on inside rare noise
+// zones, so most of the run is dead straight.
 float runnelX(float ci, float y, float cn, float colW) {
   float mn = vnoise(vec2(y * 4.0, cn * 91.0)) - 0.5;
   float kink = mn * mn * mn * 8.0;                   // flat runs, rare bends
-  float wig  = sin(y * 30.0 + cn * 6.28) * 0.085;    // subtle wiggle
+  // wiggle envelope: ~0 almost everywhere, briefly 1 in rare patches
+  float env = smoothstep(0.62, 0.78, vnoise(vec2(y * 2.2, cn * 53.0)));
+  float wig = sin(y * 42.0 + cn * 6.28) * 0.09 * env;
   return (ci + 0.5) * colW + (kink * 0.42 + wig) * colW;
 }
 
