@@ -132,7 +132,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.seeds.forEach(s => drawSeed(ctx, s));
+  [...state.seeds].sort((a, b) => a.scale - b.scale).forEach(s => drawSeed(ctx, s));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

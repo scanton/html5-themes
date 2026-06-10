@@ -204,7 +204,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.notes.forEach(n => drawNote(ctx, n));
+  [...state.notes].sort((a, b) => a.size - b.size).forEach(n => drawNote(ctx, n));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

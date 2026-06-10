@@ -134,7 +134,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.flies.forEach(f => drawFirefly(ctx, f));
+  [...state.flies].sort((a, b) => a.r - b.r).forEach(f => drawFirefly(ctx, f));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

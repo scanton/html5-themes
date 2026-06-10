@@ -243,7 +243,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.rockets.forEach(r => drawRocket(ctx, r));
+  // depth order: small (far) rockets draw first, large (near) on top
+  [...state.rockets].sort((a, b) => a.size - b.size)
+    .forEach(r => drawRocket(ctx, r));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

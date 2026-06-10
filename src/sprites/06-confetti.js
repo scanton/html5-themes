@@ -114,7 +114,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.pieces.forEach(p => {
+  [...state.pieces].sort((a, b) => a.size - b.size).forEach(p => {
     const fadeOut = Math.min((p.maxLife - p.life) / 0.9, 1);
     ctx.globalAlpha = fadeOut;
     ctx.save();

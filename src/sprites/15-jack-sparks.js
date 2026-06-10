@@ -111,7 +111,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.sparks.forEach(s => drawSpark(ctx, s));
+  [...state.sparks].sort((a, b) => a.r - b.r).forEach(s => drawSpark(ctx, s));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

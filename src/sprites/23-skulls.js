@@ -190,7 +190,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.skulls.forEach(s => drawSkull(ctx, s));
+  // depth order: small (far) skulls draw first, large (near) on top
+  [...state.skulls].sort((a, b) => a.size - b.size)
+    .forEach(s => drawSkull(ctx, s));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

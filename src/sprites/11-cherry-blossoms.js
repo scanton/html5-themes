@@ -128,7 +128,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.flowers.forEach(f => drawFlower(ctx, f));
+  [...state.flowers].sort((a, b) => a.size - b.size).forEach(f => drawFlower(ctx, f));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

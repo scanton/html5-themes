@@ -318,7 +318,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.fairies.forEach(f => drawFairy(ctx, f));
+  // depth order: small (far) fairies draw first, large (near) on top
+  [...state.fairies].sort((a, b) => a.sz - b.sz)
+    .forEach(f => drawFairy(ctx, f));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

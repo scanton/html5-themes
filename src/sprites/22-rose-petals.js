@@ -164,7 +164,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.petals.forEach(p => drawPetal(ctx, p));
+  // depth order: small (far) petals draw first, large (near) on top
+  [...state.petals].sort((a, b) => a.r - b.r)
+    .forEach(p => drawPetal(ctx, p));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

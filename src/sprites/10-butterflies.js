@@ -219,7 +219,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.butterflies.forEach(b => drawButterfly(ctx, b));
+  [...state.butterflies].sort((a, b) => a.scale - b.scale).forEach(b => drawButterfly(ctx, b));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

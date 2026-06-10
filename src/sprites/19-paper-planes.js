@@ -143,7 +143,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.planes.forEach(p => drawPlane(ctx, p));
+  // depth order: small (far) planes draw first, large (near) on top
+  [...state.planes].sort((a, b) => a.scale - b.scale)
+    .forEach(p => drawPlane(ctx, p));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

@@ -257,7 +257,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.fish.forEach(f => drawKoi(ctx, f));
+  // depth order: small (far) fish draw first, large (near) on top
+  [...state.fish].sort((a, b) => a.len - b.len)
+    .forEach(f => drawKoi(ctx, f));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

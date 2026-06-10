@@ -174,7 +174,7 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.comets.forEach(c => drawComet(ctx, c));
+  [...state.comets].sort((a, b) => a.r - b.r).forEach(c => drawComet(ctx, c));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

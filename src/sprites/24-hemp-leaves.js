@@ -196,7 +196,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.leaves.forEach(l => drawLeaf(ctx, l));
+  // depth order: small (far) leaves draw first, large (near) on top
+  [...state.leaves].sort((a, b) => a.r - b.r)
+    .forEach(l => drawLeaf(ctx, l));
   ctx.globalAlpha = 1;
   ctx.restore();
 }

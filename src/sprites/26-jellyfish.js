@@ -240,7 +240,9 @@ export default { name, init, update, draw };
 
 export function draw(ctx, state) {
   ctx.save();
-  state.jellies.forEach(j => drawJelly(ctx, j));
+  // depth order: small (far) jellies draw first, large (near) on top
+  [...state.jellies].sort((a, b) => a.r - b.r)
+    .forEach(j => drawJelly(ctx, j));
   ctx.globalAlpha = 1;
   ctx.restore();
 }
