@@ -40,13 +40,18 @@ vec3 cityBg(vec2 p, float asp, float t, float sharp) {
   return col;
 }
 
-// One layer of sliding drops in columns of width colW.
-// Drops fall STRAIGHT, but follow a meander path with occasional kinks
-// where the glass resists — not a rhythmic wiggle. Only some cycles in
-// each column carry a drop, so the pane stays sparse.
+// Runnel path for column ci at height y: mostly straight, with sparse
+// kinks where the glass resists (cubed noise) PLUS a gentle wiggle.
+float runnelX(float ci, float y, float cn, float colW) {
+  float mn = vnoise(vec2(y * 4.0, cn * 91.0)) - 0.5;
+  float kink = mn * mn * mn * 8.0;                   // flat runs, rare bends
+  float wig  = sin(y * 30.0 + cn * 6.28) * 0.085;    // subtle wiggle
+  return (ci + 0.5) * colW + (kink * 0.42 + wig) * colW;
+}
+
+// Contribution of column ci's drop/trail at pixel p.
 // Returns (offsetX, offsetY, mask).
-vec3 slideLayer(vec2 p, float t, float colW, float seed) {
-  float ci = floor(p.x / colW);
+vec3 dropInCol(vec2 p, float t, float colW, float seed, float ci) {
   float cn = hash(vec2(ci * 7.31, seed));
   float speed = 0.05 + cn * 0.07;
   float raw = t * speed + cn * 13.7;
@@ -56,18 +61,14 @@ vec3 slideLayer(vec2 p, float t, float colW, float seed) {
   float gate = step(0.55, hash(vec2(ci * 3.17 + seed, cyc)));
   float yd = 1.08 - prog * 1.20;                     // slides top -> bottom
 
-  // meander: mostly straight, with sparse kinks (sharpened noise)
-  float mn = vnoise(vec2(p.y * 4.0, cn * 91.0)) - 0.5;
-  float kink = mn * mn * mn * 8.0;                   // flat runs, rare bends
-  float xPath = (ci + 0.5) * colW + kink * colW * 0.55;
-  float mnD = vnoise(vec2(yd * 4.0, cn * 91.0)) - 0.5;
-  float xDrop = (ci + 0.5) * colW + (mnD * mnD * mnD * 8.0) * colW * 0.55;
+  float xDrop = runnelX(ci, yd, cn, colW);           // drop rides the path
+  float xPath = runnelX(ci, p.y, cn, colW);          // trail follows it
 
   vec2 dvec = vec2((p.x - xDrop) / colW, (p.y - yd) / (colW * 1.5));
   float dist = length(dvec);
   float drop = S(0.40, 0.22, dist) * gate;
 
-  // beaded trail above the drop, following the same meander path
+  // beaded trail above the drop
   float above = p.y - yd;
   float fade = S(0.0, 0.015, above) * exp(-above * 4.2);
   float cd = abs(p.x - xPath) / colW;
@@ -77,6 +78,20 @@ vec3 slideLayer(vec2 p, float t, float colW, float seed) {
   float mask = max(drop, trail * 0.6);
   vec2 off = dvec * drop * 1.4 + vec2((p.x - xPath) / colW, 0.35) * trail * 0.35;
   return vec3(off, mask);
+}
+
+// One layer of sliding drops. The meander can carry a drop across its
+// column boundary, so each pixel checks its own column AND both
+// neighbours — no more clipped drops at column edges.
+vec3 slideLayer(vec2 p, float t, float colW, float seed) {
+  float ci = floor(p.x / colW);
+  vec3 a = dropInCol(p, t, colW, seed, ci - 1.0);
+  vec3 b = dropInCol(p, t, colW, seed, ci);
+  vec3 c = dropInCol(p, t, colW, seed, ci + 1.0);
+  vec3 r = b;
+  if (a.z > r.z) r = a;
+  if (c.z > r.z) r = c;
+  return r;
 }
 
 // Static condensation micro-droplets that slowly grow and shrink.
