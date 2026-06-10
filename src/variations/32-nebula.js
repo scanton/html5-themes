@@ -1,10 +1,10 @@
 import { createGLVariation } from '../engine.js';
 
-// Nebula — a real volumetric raymarch through a 3D noise density field.
-// The camera flies forward THROUGH the gas: clouds part around you with
-// genuine parallax, dense cores glow hot pink against violet and teal
-// wisps, and three star layers drift behind — dimmed where the nebula
-// passes in front of them (true volumetric occlusion via transmittance).
+// Nebula — flying fast and straight INTO deep space. A volumetric
+// raymarch through a 3D density field streams the gas past and around
+// you, while warp-streak stars radiate outward from the central
+// vanishing point (log-polar starfield). A faint destination glow sits
+// dead ahead; the nebula's transmittance dims the stars it covers.
 
 export default createGLVariation('Nebula', `
 float h3(vec3 p) {
@@ -41,21 +41,20 @@ void main() {
   vec2 q = (gl_FragCoord.xy - 0.5 * u_resolution) / u_resolution.y;
   float t = u_time;
 
-  // camera: flying forward, gently swaying
-  vec3 ro = vec3(sin(t * 0.04) * 0.6, cos(t * 0.033) * 0.4, t * 0.22);
-  vec3 rd = normalize(vec3(q + vec2(sin(t * 0.021) * 0.06, cos(t * 0.017) * 0.05), 1.15));
+  // camera: fast, straight forward — wide FOV amplifies the speed
+  vec3 ro = vec3(sin(t * 0.07) * 0.25, cos(t * 0.05) * 0.18, t * 1.15);
+  vec3 rd = normalize(vec3(q, 0.85));
 
-  // ── volumetric march ──────────────────────────────────────────
+  // ── volumetric march: gas streams past and around the camera ──
   vec3 col = vec3(0.0);
-  float trans = 1.0;                       // transmittance
-  float td = 0.6;
+  float trans = 1.0;
+  float td = 0.35;
   for (int i = 0; i < 24; i++) {
     vec3 p = ro + rd * td;
-    float den = fbm3(p * 0.55) + n3(p * 2.3) * 0.10 - 0.46;
+    float den = fbm3(p * 0.48) + n3(p * 2.1) * 0.10 - 0.47;
     if (den > 0.0) {
       den = min(den, 0.42);
-      // hue drifts along the flight path; hot cores blush pink
-      float hueMix = 0.5 + 0.5 * sin(p.z * 0.35 + p.x * 0.2);
+      float hueMix = 0.5 + 0.5 * sin(p.z * 0.30 + p.x * 0.22);
       vec3 emit = mix(vec3(0.45, 0.12, 0.80),        // violet
                       vec3(0.08, 0.40, 0.85),        // teal-blue
                       hueMix);
@@ -63,37 +62,47 @@ void main() {
       col += emit * den * trans * 0.62;
       trans *= 1.0 - den * 0.62;
     }
-    td += 0.40;
+    td += 0.48;
   }
 
-  // ── stars: 3 parallax layers, occluded by the gas in front ────
+  // ── warp stars: streaks radiating out from the vanishing point ──
+  // log-polar space: motion in -v is exponential outward expansion,
+  // exactly what forward flight looks like.
+  float ang = atan(q.y, q.x);
+  float rad = length(q);
   vec3 starCol = vec3(0.0);
   for (int s = 0; s < 3; s++) {
     float fs = float(s);
-    float scale = 22.0 + fs * 26.0;
-    // nearer layers (smaller scale index) slide past faster
-    vec2 sp = q * scale + vec2(0.0, -t * (0.5 - fs * 0.15)) + fs * 17.0;
+    float nAng = 16.0 + fs * 9.0;                 // angular lanes
+    float spd  = 1.3 + fs * 0.8;                  // nearer layer = faster
+    vec2 sp = vec2(ang * nAng / 6.28318,
+                   log(rad + 0.04) * 3.2 - t * spd + fs * 23.0);
     vec2 id = floor(sp);
     vec2 f = fract(sp) - 0.5;
-    float h1 = hash(id + fs * 31.0);
-    if (h1 > 0.92) {
-      vec2 c = (vec2(hash(id + 3.7), hash(id + 9.1)) - 0.5) * 0.7;
-      float tw = 0.65 + 0.35 * sin(t * (1.0 + h1 * 3.0) + h1 * 40.0);
-      float m = exp(-length(f - c) * (14.0 + fs * 6.0)) * tw;
-      vec3 sc = h1 > 0.975 ? vec3(0.75, 0.85, 1.0) : vec3(1.0, 0.95, 0.88);
-      starCol += sc * m * (1.1 - fs * 0.3);
+    float h1 = hash(id + fs * 37.0);
+    if (h1 > 0.74) {
+      vec2 c = (vec2(hash(id + 3.7), hash(id + 9.1)) - 0.5) * 0.5;
+      vec2 d = f - c;
+      // tight across the lane, stretched along the direction of travel
+      float m = exp(-abs(d.x) * 24.0 - abs(d.y) * 6.0);
+      m *= smoothstep(0.02, 0.30, rad);           // born near the centre
+      m *= 0.55 + 0.45 * h1;
+      starCol += mix(vec3(1.0, 0.95, 0.88), vec3(0.72, 0.84, 1.0),
+                     step(0.90, h1)) * m;
     }
   }
-  col += starCol * (0.25 + 0.75 * trans);   // gas dims the stars behind it
+  col += starCol * 1.15 * (0.30 + 0.70 * trans);  // gas occludes stars
 
-  // ── deep-space base + a distant galactic glow ─────────────────
-  col += vec3(0.012, 0.010, 0.035) * trans;
-  float gd = length(q - vec2(0.25, 0.12));
-  col += vec3(0.30, 0.15, 0.45) * exp(-gd * 2.6) * 0.30 * trans;
+  // ── destination: a soft glow dead ahead at the vanishing point ──
+  col += vec3(0.55, 0.62, 0.95) * exp(-rad * 5.5) * 0.50 * trans;
+  col += vec3(0.30, 0.22, 0.50) * exp(-rad * 2.0) * 0.18 * trans;
 
-  // gentle tone shaping
-  col = col / (1.0 + col);            // soft tonemap
-  col = pow(col, vec3(0.92));
+  // deep-space base
+  col += vec3(0.010, 0.008, 0.030) * trans;
+
+  // tone shaping
+  col = col / (1.0 + col);
+  col = pow(col, vec3(0.90));
 
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

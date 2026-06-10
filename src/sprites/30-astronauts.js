@@ -17,15 +17,18 @@ function makeAstronaut(w, h, spreadXY) {
     y: spreadXY ? rand(sz * 2, h - sz * 2) : rand(h * 0.1, h * 0.9),
     sz,
     trim: TRIMS[Math.floor(rand(0, TRIMS.length))],
-    vx: rand(-14, 14) || 8,
-    vy: rand(-9, 9),
+    vx: rand(-7, 7) || 5,                 // slow drift so burns read clearly
+    vy: rand(-5, 5),
     rot:     rand(0, Math.PI * 2),
-    rotRate: rand(-0.35, 0.35),
+    rotRate: rand(-0.3, 0.3),
     // limb drift phases
     limb:     rand(0, Math.PI * 2),
     limbRate: rand(0.4, 0.8),
     puffs:    [],
     puffTimer: rand(2, 6),
+    burstT:    0,                          // remaining burn time
+    burstAng:  0,                          // thrust (acceleration) direction
+    jetTimer:  0,
     glint:    rand(0, Math.PI * 2),
     life:     0,
     maxLife:  rand(16, 30),
@@ -55,30 +58,47 @@ export function update(state, dt) {
     n.y += n.vy * dt;
     n.puffTimer -= dt;
 
-    // RCS burn: emit a puff and nudge velocity the opposite way
-    if (n.puffTimer <= 0 && n.life <= n.maxLife) {
-      n.puffTimer = rand(2.5, 7);
-      const ang = rand(0, Math.PI * 2);
-      const kick = rand(8, 20);
-      n.vx += Math.cos(ang) * kick;
-      n.vy += Math.sin(ang) * kick;
-      // clamp drift speed
+    // ── RCS burn: a deliberate, sustained thruster firing ──
+    // The jet streams one way; the astronaut clearly accelerates the
+    // opposite way for the whole burn (action/reaction you can see).
+    if (n.puffTimer <= 0 && n.burstT <= 0 && n.life <= n.maxLife) {
+      n.puffTimer = rand(4, 9);
+      n.burstT = rand(0.6, 1.1);
+      // thrust biased back toward the canvas centre, so burns also
+      // visibly turn them around before they wander off
+      const bias = Math.atan2(h / 2 - n.y, w / 2 - n.x);
+      n.burstAng = bias + rand(-0.7, 0.7);
+    }
+    if (n.burstT > 0 && n.life <= n.maxLife) {
+      n.burstT -= dt;
+      const ax = Math.cos(n.burstAng), ay = Math.sin(n.burstAng);
+      // strong, continuous acceleration along the thrust direction
+      n.vx += ax * 60 * dt;
+      n.vy += ay * 60 * dt;
       const sp = Math.hypot(n.vx, n.vy);
-      if (sp > 26) { n.vx *= 26 / sp; n.vy *= 26 / sp; }
-      for (let p = 0; p < 6; p++) {
+      if (sp > 42) { n.vx *= 42 / sp; n.vy *= 42 / sp; }
+      // tight collimated exhaust jet from the nozzle, streaming the
+      // exact opposite way — emitted continuously during the burn
+      n.jetTimer -= dt;
+      while (n.jetTimer <= 0) {
+        n.jetTimer += 0.018;
+        const nozX = n.x - ax * n.sz * 0.85;
+        const nozY = n.y - ay * n.sz * 0.85;
+        const jSpd = rand(90, 140);
+        const spread = rand(-0.10, 0.10);        // narrow cone
+        const jAng = n.burstAng + Math.PI + spread;
         n.puffs.push({
-          x: n.x - Math.cos(ang) * n.sz * 0.8,
-          y: n.y - Math.sin(ang) * n.sz * 0.8,
-          vx: -Math.cos(ang) * rand(20, 50) + rand(-10, 10),
-          vy: -Math.sin(ang) * rand(20, 50) + rand(-10, 10),
-          r: rand(1.5, 3.5),
+          x: nozX, y: nozY,
+          vx: Math.cos(jAng) * jSpd + n.vx * 0.3,
+          vy: Math.sin(jAng) * jSpd + n.vy * 0.3,
+          r: rand(1.0, 2.0),
+          hot: true,                              // fresh exhaust glows
           life: 0,
-          maxLife: rand(0.4, 0.9),
+          maxLife: rand(0.35, 0.65),
         });
       }
-      // tumble reacts a touch
-      n.rotRate += rand(-0.15, 0.15);
-      n.rotRate = Math.max(-0.6, Math.min(0.6, n.rotRate));
+      // burn steadies the tumble
+      n.rotRate *= 1 - 1.5 * dt;
     }
     for (let pi = n.puffs.length - 1; pi >= 0; pi--) {
       const p = n.puffs[pi];
@@ -112,12 +132,16 @@ function drawAstronaut(ctx, n) {
   const fadeOut = Math.min((maxLife - life) / 2.0, 1);
   const a = Math.max(0, fadeIn * fadeOut);
 
-  // thruster puffs in world space
+  // exhaust jet in world space — hot white-blue core fresh out of the
+  // nozzle, expanding to a faint vapour cone
   puffs.forEach(p => {
-    const pa = (1 - p.life / p.maxLife) * 0.5 * Math.max(a, 0.4);
+    const u = p.life / p.maxLife;
+    const pa = (1 - u) * 0.65 * Math.max(a, 0.4);
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(220,228,255,${pa})`;
+    ctx.fillStyle = u < 0.25
+      ? `rgba(255,255,255,${pa})`          // hot core
+      : `rgba(200,214,255,${pa * 0.8})`;   // cooling vapour
     ctx.fill();
   });
   if (a <= 0) return;
