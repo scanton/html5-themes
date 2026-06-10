@@ -89,7 +89,8 @@ export function update(state, dt) {
     if (Math.abs(f.vx) > 6) f.face = f.vx > 0 ? 1 : -1;
 
     // pixie dust falls from the fairy, twinkles, fades
-    if (f.dustTimer > 0.05) {
+    // (stop emitting once the fairy has expired, so it can be removed)
+    if (f.life <= f.maxLife && f.dustTimer > 0.05) {
       f.dustTimer = 0;
       f.dust.push({
         x: f.x + rand(-f.sz * 0.3, f.sz * 0.3),
@@ -173,19 +174,21 @@ function drawFairy(ctx, f) {
   const { sz, col, wingFlap, glow, life, maxLife, dust, face } = f;
   const fadeIn  = Math.min(life / 0.8, 1);
   const fadeOut = Math.min((maxLife - life) / 1.5, 1);
-  const a = fadeIn * fadeOut;
+  const a = Math.max(0, fadeIn * fadeOut);
   const flap = (Math.sin(wingFlap) + 1) / 2;     // 0..1
 
   // pixie dust in world space
   dust.forEach(d => {
-    const da = (1 - d.life / d.maxLife) * (0.5 + 0.5 * Math.abs(Math.sin(d.tw))) * 0.9;
+    // dust fades on its own clock so lingering motes finish gracefully
+    const da = (1 - d.life / d.maxLife) * (0.5 + 0.5 * Math.abs(Math.sin(d.tw)))
+             * 0.9 * Math.max(a, 0.45);
     ctx.beginPath();
     ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-    ctx.fillStyle = `hsla(${col.h + 15},90%,82%,${da * a})`;
+    ctx.fillStyle = `hsla(${col.h + 15},90%,82%,${da})`;
     ctx.fill();
     // tiny cross glint on the brightest ones
     if (d.r > 1.8) {
-      ctx.strokeStyle = `hsla(${col.h + 15},90%,90%,${da * a * 0.7})`;
+      ctx.strokeStyle = `hsla(${col.h + 15},90%,90%,${da * 0.7})`;
       ctx.lineWidth = 0.6;
       ctx.beginPath();
       ctx.moveTo(d.x - d.r * 1.8, d.y); ctx.lineTo(d.x + d.r * 1.8, d.y);

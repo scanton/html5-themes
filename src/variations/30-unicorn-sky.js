@@ -10,7 +10,7 @@ export default createGLVariation('Unicorn Sky', `
 vec3 pastel(float h) {
   h = fract(h);
   vec3 c = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
-  return mix(vec3(1.0), c, 0.42);          // soften toward white
+  return mix(vec3(1.0), c, 0.58);          // keep colours present, not chalky
 }
 
 void main() {
@@ -20,8 +20,8 @@ void main() {
   float t = u_time * 0.12;
 
   // ── Base sky: periwinkle top -> blush horizon ────────────────
-  vec3 skyTop = vec3(0.72, 0.76, 0.98);
-  vec3 skyLow = vec3(1.00, 0.85, 0.90);
+  vec3 skyTop = vec3(0.58, 0.62, 0.94);
+  vec3 skyLow = vec3(0.97, 0.74, 0.84);
   vec3 col = mix(skyLow, skyTop, smoothstep(0.05, 0.95, uv.y));
 
   // ── Iridescent silk ribbons (domain-warped flow) ─────────────
@@ -43,14 +43,14 @@ void main() {
   // shimmer: a moving bright filament inside the silk
   float sheen = pow(smoothstep(0.45, 0.62, strands) * smoothstep(0.80, 0.62, strands), 1.5);
 
-  col = mix(col, ribbon, silk * 0.62);
-  col += vec3(1.0, 0.97, 1.0) * sheen * 0.30;
+  col = mix(col, ribbon, silk * 0.68);
+  col += vec3(1.0, 0.97, 1.0) * sheen * 0.16;
 
-  // ── Radiant glow — soft magical sun, upper left ──────────────
+  // ── Radiant glow — small soft magical sun, upper left ────────
   vec2 sunPos = vec2(asp * 0.24, 0.86);
   float sd = length(p - sunPos);
-  col += vec3(1.00, 0.92, 0.78) * exp(-sd * 3.2) * 0.55;
-  col += vec3(1.00, 0.80, 0.88) * exp(-sd * 1.1) * 0.22;
+  col += vec3(1.00, 0.90, 0.72) * exp(-sd * 5.5) * 0.45;
+  col += vec3(1.00, 0.78, 0.86) * exp(-sd * 2.2) * 0.10;
 
   // ── Dreamy clouds with pink rim light ────────────────────────
   vec2 cp = p * vec2(1.0, 2.2) + vec2(t * 0.5, 0.0);
@@ -59,8 +59,8 @@ void main() {
   // rim: sample density slightly toward the sun — thinner side glows
   float clSun = fbm(cp * 1.6 + normalize(sunPos - p + 0.001) * 0.18);
   float rim = clamp((cl - clSun) * 6.0, 0.0, 1.0) * cloud;
-  col = mix(col, vec3(1.0, 0.98, 1.0), cloud * 0.55);
-  col += vec3(1.0, 0.72, 0.85) * rim * 0.5;
+  col = mix(col, vec3(0.99, 0.95, 0.99), cloud * 0.32);
+  col += vec3(1.0, 0.68, 0.82) * rim * 0.40;
 
   // ── Floating sparkles — twinkling 4-point glints ─────────────
   for (int i = 0; i < 12; i++) {
@@ -76,9 +76,6 @@ void main() {
                + exp(-abs(d.y) * 350.0) * exp(-abs(d.x) * 28.0);
     col += vec3(1.0, 0.98, 0.92) * (core * 2.0 + arms * 0.7) * tw;
   }
-
-  // airy lift
-  col = mix(col, vec3(1.0), 0.05);
 
   gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
 }

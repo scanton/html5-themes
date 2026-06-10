@@ -68,8 +68,13 @@ export function update(state, dt) {
     r.x += r.vx * dt;
     r.y += r.vy * dt;
 
+    const offscreen = r.x < -r.size * 5 || r.x > w + r.size * 5 ||
+                      r.y < -r.size * 5 || r.y > h + r.size * 5;
+    const expired = r.life > r.maxLife || offscreen;
+
     // drop a smoke puff at the nozzle every so often
-    if (r.smokeTimer > 0.07) {
+    // (stop once expired/offscreen so the rocket can actually be removed)
+    if (!expired && r.smokeTimer > 0.07) {
       r.smokeTimer = 0;
       const ang = Math.atan2(r.vy, r.vx);
       const back = r.size * 1.05;
@@ -92,12 +97,7 @@ export function update(state, dt) {
       if (s.life > s.maxLife) r.smoke.splice(si, 1);
     }
 
-    if ((r.x < -r.size * 5 || r.x > w + r.size * 5 ||
-         r.y < -r.size * 5 || r.y > h + r.size * 5) && r.smoke.length === 0) {
-      rockets.splice(i, 1);
-    } else if (r.life > r.maxLife && r.smoke.length === 0) {
-      rockets.splice(i, 1);
-    }
+    if (expired && r.smoke.length === 0) rockets.splice(i, 1);
   }
 }
 
