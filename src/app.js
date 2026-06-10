@@ -24,6 +24,11 @@ import autumnLeaves   from './variations/22-autumn-leaves.js';
 import starfield      from './variations/23-starfield.js';
 import candlelight    from './variations/24-candlelight.js';
 import rainbowRays    from './variations/25-rainbow-rays.js';
+import bokeh          from './variations/26-bokeh.js';
+import stageLights    from './variations/27-stage-lights.js';
+import koiPond        from './variations/28-koi-pond.js';
+import deepOcean      from './variations/29-deep-ocean.js';
+import unicornSky     from './variations/30-unicorn-sky.js';
 
 // ── Sprite modules ────────────────────────────────────────────────────────────
 import bubblesSprite      from './sprites/01-bubbles.js';
@@ -46,6 +51,13 @@ import geometricSprite    from './sprites/17-geometric.js';
 import musicNotesSprite   from './sprites/18-music-notes.js';
 import paperPlanesSprite  from './sprites/19-paper-planes.js';
 import autumnLeavesSprite from './sprites/21-autumn-leaves.js';
+import rosePetalsSprite   from './sprites/22-rose-petals.js';
+import skullsSprite       from './sprites/23-skulls.js';
+import hempLeavesSprite   from './sprites/24-hemp-leaves.js';
+import koiFishSprite      from './sprites/25-koi-fish.js';
+import jellyfishSprite    from './sprites/26-jellyfish.js';
+import rocketsSprite      from './sprites/27-rockets.js';
+import fairiesSprite      from './sprites/28-fairies.js';
 
 // Index 0 = no background (solid white canvas)
 const noneBackground = {
@@ -64,6 +76,7 @@ const variations = [
   poolWater, snowfall, beer, tieDye, hearts,
   christmas, fireworks, confetti,
   autumnLeaves, starfield, candlelight, rainbowRays,
+  bokeh, stageLights, koiPond, deepOcean, unicornSky,
 ];
 
 // null = "None" (no overlay)
@@ -74,6 +87,8 @@ const sprites = [
   firefliesSprite, butterfliesSprite, blossomsSprite, dandelionSprite,
   shardsSprite, runesSprite, jackSparksSprite, cometsSprite,
   geometricSprite, musicNotesSprite, paperPlanesSprite, autumnLeavesSprite,
+  rosePetalsSprite, skullsSprite, hempLeavesSprite, koiFishSprite,
+  jellyfishSprite, rocketsSprite, fairiesSprite,
 ];
 
 const spriteLabels = [
@@ -83,6 +98,8 @@ const spriteLabels = [
   'Fireflies', 'Butterflies', 'Cherry Blossoms', 'Dandelion Seeds',
   'Crystal Shards', 'Spell Runes', 'Jack-o-Lantern Sparks', 'Comets',
   'Geometric Shapes', 'Music Notes', 'Paper Planes', 'Autumn Leaves',
+  'Rose Petals', 'Skulls', 'Hemp Leaves', 'Koi Fish',
+  'Jellyfish', 'Rockets', 'Fairies',
 ];
 
 // ── Presets ───────────────────────────────────────────────────────────────────
@@ -113,6 +130,13 @@ const PRESETS = [
   { name: 'Dream Seeds',     bg:  1, sprite: 12 },  // Dreamy Blobs + Dandelion Seeds
   { name: 'Broken World',    bg:  8, sprite: 13 },  // Smoke + Crystal Shards
   { name: 'Christmas Snow',  bg: 16, sprite:  3 },  // Christmas + Snowflakes
+  { name: 'First Dance',    bg: 23, sprite: 21 },  // Bokeh + Rose Petals
+  { name: 'Headbanger',     bg: 24, sprite: 22 },  // Stage Lights + Skulls
+  { name: 'Session',        bg: 14, sprite: 23 },  // Tie Dye + Hemp Leaves
+  { name: 'Zen Garden',     bg: 25, sprite: 24 },  // Koi Pond + Koi Fish
+  { name: 'Deep Sea',       bg: 26, sprite: 25 },  // Deep Ocean + Jellyfish
+  { name: 'Blast Off',      bg: 20, sprite: 26 },  // Starfield + Rockets
+  { name: 'Fairy Garden',   bg: 27, sprite: 27 },  // Unicorn Sky + Fairies
 ];
 
 // ─── state ────────────────────────────────────────────────────────────────────
