@@ -29,6 +29,8 @@ import stageLights    from './variations/27-stage-lights.js';
 import koiPond        from './variations/28-koi-pond.js';
 import deepOcean      from './variations/29-deep-ocean.js';
 import unicornSky     from './variations/30-unicorn-sky.js';
+import rainOnGlass    from './variations/31-rain-on-glass.js';
+import nebula         from './variations/32-nebula.js';
 
 // ── Sprite modules ────────────────────────────────────────────────────────────
 import bubblesSprite      from './sprites/01-bubbles.js';
@@ -58,6 +60,8 @@ import koiFishSprite      from './sprites/25-koi-fish.js';
 import jellyfishSprite    from './sprites/26-jellyfish.js';
 import rocketsSprite      from './sprites/27-rockets.js';
 import fairiesSprite      from './sprites/28-fairies.js';
+import umbrellasSprite    from './sprites/29-umbrellas.js';
+import astronautsSprite   from './sprites/30-astronauts.js';
 
 // Index 0 = no background (solid white canvas)
 const noneBackground = {
@@ -77,6 +81,7 @@ const variations = [
   christmas, fireworks, confetti,
   autumnLeaves, starfield, candlelight, rainbowRays,
   bokeh, stageLights, koiPond, deepOcean, unicornSky,
+  rainOnGlass, nebula,
 ];
 
 // null = "None" (no overlay)
@@ -89,6 +94,7 @@ const sprites = [
   geometricSprite, musicNotesSprite, paperPlanesSprite, autumnLeavesSprite,
   rosePetalsSprite, skullsSprite, hempLeavesSprite, koiFishSprite,
   jellyfishSprite, rocketsSprite, fairiesSprite,
+  umbrellasSprite, astronautsSprite,
 ];
 
 const spriteLabels = [
@@ -100,6 +106,7 @@ const spriteLabels = [
   'Geometric Shapes', 'Music Notes', 'Paper Planes', 'Autumn Leaves',
   'Rose Petals', 'Skulls', 'Hemp Leaves', 'Koi Fish',
   'Jellyfish', 'Rockets', 'Fairies',
+  'Umbrellas', 'Astronauts',
 ];
 
 // ── Presets ───────────────────────────────────────────────────────────────────
@@ -137,6 +144,8 @@ const PRESETS = [
   { name: 'Deep Sea',       bg: 26, sprite: 25 },  // Deep Ocean + Jellyfish
   { name: 'Blast Off',      bg: 20, sprite: 26 },  // Starfield + Rockets
   { name: 'Fairy Garden',   bg: 27, sprite: 27 },  // Unicorn Sky + Fairies
+  { name: 'Stormy Night',   bg: 28, sprite: 28 },  // Rain on Glass + Umbrellas
+  { name: 'Spacewalk',      bg: 29, sprite: 29 },  // Nebula + Astronauts
 ];
 
 // ─── state ────────────────────────────────────────────────────────────────────
