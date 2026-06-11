@@ -5,7 +5,7 @@
 
 export default {
   name: 'Candy',
-  _container: null, _wrap: null, _styleEl: null,
+  _container: null, _wrap: null, _styleEl: null, _speed: 1.0,
 
   setup(container) {
     this._container = container;
@@ -69,6 +69,8 @@ export default {
       const el = document.createElement('div');
       el.className = 'cy-blob';
       el.dataset.blob = '';
+      const baseDur = parseFloat(anim.match(/\s(\d+\.?\d*)s/)?.[1] ?? 1);
+      el.dataset.baseDur = baseDur;
       Object.assign(el.style, {
         width: w+'px', height: h+'px',
         background: c, top, left, animation: anim,
@@ -84,7 +86,13 @@ export default {
 
   start()  { this._wrap?.querySelectorAll('.cy-blob').forEach(b => b.style.animationPlayState = 'running'); },
   stop()   { this._wrap?.querySelectorAll('.cy-blob').forEach(b => b.style.animationPlayState = 'paused'); },
-  reset()  { this.stop(); const p = this._container; this._wrap?.remove(); this._wrap = null; this.setup(p); },
+  setSpeed(s) {
+    this._speed = Math.max(0.1, s);
+    this._wrap?.querySelectorAll('.cy-blob').forEach(b => {
+      b.style.animationDuration = (parseFloat(b.dataset.baseDur) / this._speed) + 's';
+    });
+  },
+  reset()  { this.stop(); const p = this._container; this._wrap?.remove(); this._wrap = null; this.setup(p); this.setSpeed(this._speed); },
   teardown() {
     this._wrap?.remove(); this._wrap = null;
     this._styleEl?.remove(); this._styleEl = null;

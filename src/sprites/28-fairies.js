@@ -43,16 +43,17 @@ function makeFairy(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const fairies = [];
-  for (let i = 0; i < 8; i++) fairies.push(makeFairy(w, h, true));
+  const initCount = Math.round(8 * density);
+  for (let i = 0; i < initCount; i++) fairies.push(makeFairy(w, h, true));
   return { fairies, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { fairies, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.4 && fairies.length < 12) {
+  if (state.timer > 1.4 && fairies.length < Math.round(12 * density)) {
     fairies.push(makeFairy(w, h, false));
     state.timer = 0;
   }

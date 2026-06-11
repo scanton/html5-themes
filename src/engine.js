@@ -54,7 +54,7 @@ export function createGLVariation(name, fragBody) {
     _canvas: null, _gl: null, _prog: null,
     _uTime: null, _uRes: null,
     _raf: null, _running: false,
-    _elapsed: 0, _t0: null,
+    _elapsed: 0, _prevTs: null, _speed: 1.0,
 
     setup(container) {
       const canvas = document.createElement('canvas');
@@ -105,14 +105,19 @@ export function createGLVariation(name, fragBody) {
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     },
 
+    setSpeed(s) { this._speed = Math.max(0.1, s); },
+
     start() {
       if (this._running) return;
       this._running = true;
-      this._t0 = null;
+      this._prevTs = null;
       const loop = (ts) => {
         if (!this._running) return;
-        if (this._t0 === null) this._t0 = ts - this._elapsed;
-        this._elapsed = ts - this._t0;
+        if (this._prevTs !== null) {
+          const dt = Math.min(ts - this._prevTs, 50);
+          this._elapsed += dt * this._speed;
+        }
+        this._prevTs = ts;
         this._render();
         this._raf = requestAnimationFrame(loop);
       };
@@ -121,6 +126,7 @@ export function createGLVariation(name, fragBody) {
 
     stop() {
       this._running = false;
+      this._prevTs = null;
       if (this._raf) { cancelAnimationFrame(this._raf); this._raf = null; }
     },
 

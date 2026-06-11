@@ -48,16 +48,17 @@ function makeComet(w, h) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const comets = [];
-  for (let i = 0; i < 8; i++) comets.push(makeComet(w, h));
+  const initCount = Math.round(8 * density);
+  for (let i = 0; i < initCount; i++) comets.push(makeComet(w, h));
   return { comets, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { comets, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.5 && comets.length < 14) {
+  if (state.timer > 0.5 && comets.length < Math.round(14 * density)) {
     comets.push(makeComet(w, h));
     state.timer = 0;
   }

@@ -40,16 +40,17 @@ function makeNote(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const notes = [];
-  for (let i = 0; i < 16; i++) notes.push(makeNote(w, h, true));
+  const initCount = Math.round(16 * density);
+  for (let i = 0; i < initCount; i++) notes.push(makeNote(w, h, true));
   return { notes, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { notes, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.65 && notes.length < 24) {
+  if (state.timer > 0.65 && notes.length < Math.round(24 * density)) {
     notes.push(makeNote(w, h, false));
     state.timer = 0;
   }

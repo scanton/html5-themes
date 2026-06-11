@@ -31,16 +31,17 @@ function makeSpark(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const sparks = [];
-  for (let i = 0; i < 35; i++) sparks.push(makeSpark(w, h, true));
+  const initCount = Math.round(35 * density);
+  for (let i = 0; i < initCount; i++) sparks.push(makeSpark(w, h, true));
   return { sparks, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { sparks, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.10 && sparks.length < 55) {
+  if (state.timer > 0.10 && sparks.length < Math.round(55 * density)) {
     sparks.push(makeSpark(w, h, false));
     state.timer = 0;
   }

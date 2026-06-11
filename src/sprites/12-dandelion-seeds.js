@@ -32,13 +32,14 @@ function makeSeed(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const seeds = [];
-  for (let i = 0; i < 28; i++) seeds.push(makeSeed(w, h, true));
+  const initCount = Math.round(28 * density);
+  for (let i = 0; i < initCount; i++) seeds.push(makeSeed(w, h, true));
   return { seeds, w, h, timer: 0, wind: 0, windTarget: 0, windTimer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { seeds, w, h } = state;
 
   // Slowly shifting wind
@@ -50,7 +51,7 @@ export function update(state, dt) {
   state.wind += (state.windTarget - state.wind) * dt * 0.6;
 
   state.timer += dt;
-  if (state.timer > 0.45 && seeds.length < 40) {
+  if (state.timer > 0.45 && seeds.length < Math.round(40 * density)) {
     seeds.push(makeSeed(w, h, false));
     state.timer = 0;
   }

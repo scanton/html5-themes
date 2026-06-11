@@ -51,16 +51,17 @@ function makeShape(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const shapes = [];
-  for (let i = 0; i < 20; i++) shapes.push(makeShape(w, h, true));
+  const initCount = Math.round(20 * density);
+  for (let i = 0; i < initCount; i++) shapes.push(makeShape(w, h, true));
   return { shapes, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { shapes, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.55 && shapes.length < 30) {
+  if (state.timer > 0.55 && shapes.length < Math.round(30 * density)) {
     shapes.push(makeShape(w, h, false));
     state.timer = 0;
   }

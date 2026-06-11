@@ -62,9 +62,10 @@ function makeJelly(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const jellies = [];
-  for (let i = 0; i < 8; i++) jellies.push(makeJelly(w, h, true));
+  const initCount = Math.round(8 * density);
+  for (let i = 0; i < initCount; i++) jellies.push(makeJelly(w, h, true));
   return { jellies, w, h, timer: 0 };
 }
 
@@ -77,10 +78,10 @@ function pulseCurve(phase) {
                  : Math.cos(((u - 0.3) / 0.7) * Math.PI * 0.5); // slow release
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { jellies, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.6 && jellies.length < 12) {
+  if (state.timer > 1.6 && jellies.length < Math.round(12 * density)) {
     jellies.push(makeJelly(w, h, false));
     state.timer = 0;
   }

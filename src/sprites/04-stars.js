@@ -43,16 +43,17 @@ function makeStar(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const stars = [];
-  for (let i = 0; i < 22; i++) stars.push(makeStar(w, h, true));
+  const initCount = Math.round(22 * density);
+  for (let i = 0; i < initCount; i++) stars.push(makeStar(w, h, true));
   return { stars, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { stars, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.6 && stars.length < 32) {
+  if (state.timer > 0.6 && stars.length < Math.round(32 * density)) {
     stars.push(makeStar(w, h, false));
     state.timer = 0;
   }

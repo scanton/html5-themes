@@ -26,18 +26,19 @@ function makeBubble(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const bubbles = [];
-  for (let i = 0; i < 16; i++) bubbles.push(makeBubble(w, h, true));
+  const initCount = Math.round(16 * density);
+  for (let i = 0; i < initCount; i++) bubbles.push(makeBubble(w, h, true));
   return { bubbles, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { bubbles, w, h } = state;
 
   // Spawn new bubbles
   state.timer += dt;
-  if (state.timer > 0.9 && bubbles.length < 22) {
+  if (state.timer > 0.9 && bubbles.length < Math.round(22 * density)) {
     bubbles.push(makeBubble(w, h, false));
     state.timer = 0;
   }

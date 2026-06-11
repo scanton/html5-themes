@@ -36,16 +36,17 @@ function makeSkull(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const skulls = [];
-  for (let i = 0; i < 10; i++) skulls.push(makeSkull(w, h, true));
+  const initCount = Math.round(10 * density);
+  for (let i = 0; i < initCount; i++) skulls.push(makeSkull(w, h, true));
   return { skulls, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { skulls, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.9 && skulls.length < 16) {
+  if (state.timer > 0.9 && skulls.length < Math.round(16 * density)) {
     skulls.push(makeSkull(w, h, false));
     state.timer = 0;
   }

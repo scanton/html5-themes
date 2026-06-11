@@ -42,16 +42,17 @@ function makeFirefly(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const flies = [];
-  for (let i = 0; i < 22; i++) flies.push(makeFirefly(w, h, true));
+  const initCount = Math.round(22 * density);
+  for (let i = 0; i < initCount; i++) flies.push(makeFirefly(w, h, true));
   return { flies, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { flies, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.7 && flies.length < 32) {
+  if (state.timer > 0.7 && flies.length < Math.round(32 * density)) {
     flies.push(makeFirefly(w, h, false));
     state.timer = 0;
   }

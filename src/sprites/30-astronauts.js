@@ -35,16 +35,17 @@ function makeAstronaut(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const nauts = [];
-  for (let i = 0; i < 6; i++) nauts.push(makeAstronaut(w, h, true));
+  const initCount = Math.round(6 * density);
+  for (let i = 0; i < initCount; i++) nauts.push(makeAstronaut(w, h, true));
   return { nauts, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { nauts, w, h } = state;
   state.timer += dt;
-  if (state.timer > 2.4 && nauts.length < 9) {
+  if (state.timer > 2.4 && nauts.length < Math.round(9 * density)) {
     nauts.push(makeAstronaut(w, h, false));
     state.timer = 0;
   }

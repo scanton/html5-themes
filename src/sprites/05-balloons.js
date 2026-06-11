@@ -36,16 +36,17 @@ function makeBalloon(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const balloons = [];
-  for (let i = 0; i < 10; i++) balloons.push(makeBalloon(w, h, true));
+  const initCount = Math.round(10 * density);
+  for (let i = 0; i < initCount; i++) balloons.push(makeBalloon(w, h, true));
   return { balloons, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { balloons, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.2 && balloons.length < 15) {
+  if (state.timer > 1.2 && balloons.length < Math.round(15 * density)) {
     balloons.push(makeBalloon(w, h, false));
     state.timer = 0;
   }

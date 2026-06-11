@@ -39,16 +39,17 @@ function makeRocket(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const rockets = [];
-  for (let i = 0; i < 7; i++) rockets.push(makeRocket(w, h, true));
+  const initCount = Math.round(7 * density);
+  for (let i = 0; i < initCount; i++) rockets.push(makeRocket(w, h, true));
   return { rockets, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { rockets, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.1 && rockets.length < 12) {
+  if (state.timer > 1.1 && rockets.length < Math.round(12 * density)) {
     rockets.push(makeRocket(w, h, false));
     state.timer = 0;
   }

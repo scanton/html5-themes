@@ -41,16 +41,17 @@ function makeRibbon(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const ribbons = [];
-  for (let i = 0; i < 20; i++) ribbons.push(makeRibbon(w, h, true));
+  const initCount = Math.round(20 * density);
+  for (let i = 0; i < initCount; i++) ribbons.push(makeRibbon(w, h, true));
   return { ribbons, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { ribbons, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.38 && ribbons.length < 28) {
+  if (state.timer > 0.38 && ribbons.length < Math.round(28 * density)) {
     ribbons.push(makeRibbon(w, h, false));
     state.timer = 0;
   }

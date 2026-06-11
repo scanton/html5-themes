@@ -173,9 +173,12 @@ function switchTo(index) {
   currentIdx = index;
   current    = variations[index];
   current.setup(preview);
+  current.setSpeed?.(parseInt(bgSpeedInput.value) / 100);
 
   compositing = new CompositingLayer(preview);
   spriteLayer = new SpriteLayer(preview);
+  spriteLayer.setSpeed(parseInt(spSpeedInput.value) / 100);
+  spriteLayer.setDensity(parseInt(spDensityInput.value) / 100);
   if (sprites[spriteIdx]) spriteLayer.setSprite(sprites[spriteIdx]);
 
   if (isRunning) {
@@ -245,6 +248,35 @@ function switchPreset(index) {
     b.classList.toggle('active', i === index)
   );
 }
+
+// ─── sliders ─────────────────────────────────────────────────────────────────
+
+const bgSpeedInput    = document.getElementById('bg-speed');
+const bgSpeedVal      = document.getElementById('bg-speed-val');
+const spSpeedInput    = document.getElementById('sp-speed');
+const spSpeedVal      = document.getElementById('sp-speed-val');
+const spDensityInput  = document.getElementById('sp-density');
+const spDensityVal    = document.getElementById('sp-density-val');
+
+function fmtMult(v) { return `×${v.toFixed(1)}`; }
+
+bgSpeedInput.addEventListener('input', () => {
+  const s = parseInt(bgSpeedInput.value) / 100;
+  bgSpeedVal.textContent = fmtMult(s);
+  current?.setSpeed?.(s);
+});
+
+spSpeedInput.addEventListener('input', () => {
+  const s = parseInt(spSpeedInput.value) / 100;
+  spSpeedVal.textContent = fmtMult(s);
+  spriteLayer?.setSpeed(s);
+});
+
+spDensityInput.addEventListener('input', () => {
+  const d = parseInt(spDensityInput.value) / 100;
+  spDensityVal.textContent = fmtMult(d);
+  spriteLayer?.setDensity(d);
+});
 
 // ─── build tab panels ─────────────────────────────────────────────────────────
 

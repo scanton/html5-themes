@@ -37,16 +37,17 @@ function makePlane(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const planes = [];
-  for (let i = 0; i < 8; i++) planes.push(makePlane(w, h, true));
+  const initCount = Math.round(8 * density);
+  for (let i = 0; i < initCount; i++) planes.push(makePlane(w, h, true));
   return { planes, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { planes, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.4 && planes.length < 12) {
+  if (state.timer > 1.4 && planes.length < Math.round(12 * density)) {
     planes.push(makePlane(w, h, false));
     state.timer = 0;
   }

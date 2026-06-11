@@ -34,16 +34,17 @@ function makeMoon(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const moons = [];
-  for (let i = 0; i < 6; i++) moons.push(makeMoon(w, h, true));
+  const initCount = Math.round(6 * density);
+  for (let i = 0; i < initCount; i++) moons.push(makeMoon(w, h, true));
   return { moons, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { moons, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.8 && moons.length < 9) {
+  if (state.timer > 1.8 && moons.length < Math.round(9 * density)) {
     moons.push(makeMoon(w, h, false));
     state.timer = 0;
   }

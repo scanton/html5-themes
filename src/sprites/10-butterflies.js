@@ -42,16 +42,17 @@ function makeButterfly(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const butterflies = [];
-  for (let i = 0; i < 10; i++) butterflies.push(makeButterfly(w, h, true));
+  const initCount = Math.round(10 * density);
+  for (let i = 0; i < initCount; i++) butterflies.push(makeButterfly(w, h, true));
   return { butterflies, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { butterflies, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.1 && butterflies.length < 14) {
+  if (state.timer > 1.1 && butterflies.length < Math.round(14 * density)) {
     butterflies.push(makeButterfly(w, h, false));
     state.timer = 0;
   }

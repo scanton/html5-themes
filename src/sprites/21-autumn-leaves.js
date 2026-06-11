@@ -43,16 +43,17 @@ function makeLeaf(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const leaves = [];
-  for (let i = 0; i < 24; i++) leaves.push(makeLeaf(w, h, true));
+  const initCount = Math.round(24 * density);
+  for (let i = 0; i < initCount; i++) leaves.push(makeLeaf(w, h, true));
   return { leaves, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { leaves, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.55 && leaves.length < 36) {
+  if (state.timer > 0.55 && leaves.length < Math.round(36 * density)) {
     leaves.push(makeLeaf(w, h, false));
     state.timer = 0;
   }

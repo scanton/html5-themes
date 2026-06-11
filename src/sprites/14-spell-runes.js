@@ -41,16 +41,17 @@ function makeRune(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const runes = [];
-  for (let i = 0; i < 12; i++) runes.push(makeRune(w, h, true));
+  const initCount = Math.round(12 * density);
+  for (let i = 0; i < initCount; i++) runes.push(makeRune(w, h, true));
   return { runes, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { runes, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.9 && runes.length < 18) {
+  if (state.timer > 0.9 && runes.length < Math.round(18 * density)) {
     runes.push(makeRune(w, h, false));
     state.timer = 0;
   }

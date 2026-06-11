@@ -56,16 +56,17 @@ function makeKoi(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const fish = [];
-  for (let i = 0; i < 7; i++) fish.push(makeKoi(w, h, true));
+  const initCount = Math.round(7 * density);
+  for (let i = 0; i < initCount; i++) fish.push(makeKoi(w, h, true));
   return { fish, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { fish, w, h } = state;
   state.timer += dt;
-  if (state.timer > 2.2 && fish.length < 10) {
+  if (state.timer > 2.2 && fish.length < Math.round(10 * density)) {
     fish.push(makeKoi(w, h, false));
     state.timer = 0;
   }

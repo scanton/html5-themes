@@ -46,16 +46,17 @@ function makeUmbrella(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const umbrellas = [];
-  for (let i = 0; i < 9; i++) umbrellas.push(makeUmbrella(w, h, true));
+  const initCount = Math.round(9 * density);
+  for (let i = 0; i < initCount; i++) umbrellas.push(makeUmbrella(w, h, true));
   return { umbrellas, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { umbrellas, w, h } = state;
   state.timer += dt;
-  if (state.timer > 1.3 && umbrellas.length < 13) {
+  if (state.timer > 1.3 && umbrellas.length < Math.round(13 * density)) {
     umbrellas.push(makeUmbrella(w, h, false));
     state.timer = 0;
   }

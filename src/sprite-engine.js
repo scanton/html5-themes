@@ -29,6 +29,20 @@ export class SpriteLayer {
     this._raf     = null;
     this._elapsed = 0;
     this._lastTs  = null;
+    this._speed   = 1.0;
+    this._density = 1.0;
+  }
+
+  setSpeed(s)   { this._speed = Math.max(0.1, s); }
+
+  setDensity(d) {
+    this._density = Math.max(0, d);
+    if (this._sprite) {
+      this._state = this._sprite.init(this._canvas.width, this._canvas.height, this._density);
+      if (this._density === 0) {
+        this._ctx?.clearRect(0, 0, this._canvas.width, this._canvas.height);
+      }
+    }
   }
 
   // Pass null to clear sprites without replacing
@@ -40,7 +54,7 @@ export class SpriteLayer {
     this._elapsed = 0;
     this._lastTs  = null;
     this._state   = spriteModule
-      ? spriteModule.init(this._canvas.width, this._canvas.height)
+      ? spriteModule.init(this._canvas.width, this._canvas.height, this._density)
       : null;
     if (wasRunning && spriteModule) this.start();
   }
@@ -55,7 +69,7 @@ export class SpriteLayer {
       this._elapsed += dt;
       const { _canvas: cv, _ctx: ctx, _sprite: sp, _state: st } = this;
       ctx.clearRect(0, 0, cv.width, cv.height);
-      sp.update(st, dt * 0.001, this._elapsed * 0.001);
+      sp.update(st, dt * 0.001 * this._speed, this._elapsed * 0.001, this._density);
       sp.draw(ctx, st);
       this._raf = requestAnimationFrame(loop);
     };
@@ -73,7 +87,7 @@ export class SpriteLayer {
     this._elapsed = 0;
     this._ctx.clearRect(0, 0, this._canvas.width, this._canvas.height);
     if (this._sprite) {
-      this._state = this._sprite.init(this._canvas.width, this._canvas.height);
+      this._state = this._sprite.init(this._canvas.width, this._canvas.height, this._density);
     }
   }
 

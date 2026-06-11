@@ -49,16 +49,17 @@ function makeShard(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const shards = [];
-  for (let i = 0; i < 18; i++) shards.push(makeShard(w, h, true));
+  const initCount = Math.round(18 * density);
+  for (let i = 0; i < initCount; i++) shards.push(makeShard(w, h, true));
   return { shards, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { shards, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.5 && shards.length < 28) {
+  if (state.timer > 0.5 && shards.length < Math.round(28 * density)) {
     shards.push(makeShard(w, h, false));
     state.timer = 0;
   }

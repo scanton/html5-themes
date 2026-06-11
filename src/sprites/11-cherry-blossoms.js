@@ -38,16 +38,17 @@ function makeFlower(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const flowers = [];
-  for (let i = 0; i < 24; i++) flowers.push(makeFlower(w, h, true));
+  const initCount = Math.round(24 * density);
+  for (let i = 0; i < initCount; i++) flowers.push(makeFlower(w, h, true));
   return { flowers, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { flowers, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.45 && flowers.length < 36) {
+  if (state.timer > 0.45 && flowers.length < Math.round(36 * density)) {
     flowers.push(makeFlower(w, h, false));
     state.timer = 0;
   }

@@ -42,16 +42,17 @@ function makePetal(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const petals = [];
-  for (let i = 0; i < 26; i++) petals.push(makePetal(w, h, true));
+  const initCount = Math.round(26 * density);
+  for (let i = 0; i < initCount; i++) petals.push(makePetal(w, h, true));
   return { petals, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { petals, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.5 && petals.length < 40) {
+  if (state.timer > 0.5 && petals.length < Math.round(40 * density)) {
     petals.push(makePetal(w, h, false));
     state.timer = 0;
   }

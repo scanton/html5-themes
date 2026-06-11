@@ -51,16 +51,17 @@ function makeCluster(w, h, spreadXY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const clusters = [];
-  for (let i = 0; i < 5; i++) clusters.push(makeCluster(w, h, true));
+  const initCount = Math.round(5 * density);
+  for (let i = 0; i < initCount; i++) clusters.push(makeCluster(w, h, true));
   return { clusters, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { clusters, w, h } = state;
   state.timer += dt;
-  if (state.timer > 2.2 && clusters.length < 8) {
+  if (state.timer > 2.2 && clusters.length < Math.round(8 * density)) {
     clusters.push(makeCluster(w, h, false));
     state.timer = 0;
   }

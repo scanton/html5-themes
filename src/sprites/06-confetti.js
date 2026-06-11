@@ -41,16 +41,17 @@ function makePiece(w, h, spreadY) {
   };
 }
 
-export function init(w, h) {
+export function init(w, h, density = 1) {
   const pieces = [];
-  for (let i = 0; i < 50; i++) pieces.push(makePiece(w, h, true));
+  const initCount = Math.round(50 * density);
+  for (let i = 0; i < initCount; i++) pieces.push(makePiece(w, h, true));
   return { pieces, w, h, timer: 0 };
 }
 
-export function update(state, dt) {
+export function update(state, dt, elapsed, density = 1) {
   const { pieces, w, h } = state;
   state.timer += dt;
-  if (state.timer > 0.16 && pieces.length < 70) {
+  if (state.timer > 0.16 && pieces.length < Math.round(70 * density)) {
     pieces.push(makePiece(w, h, false));
     state.timer = 0;
   }
