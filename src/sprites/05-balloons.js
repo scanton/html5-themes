@@ -20,19 +20,21 @@ const COLORS = [
 ];
 
 function makeBalloon(w, h, spreadY) {
-  const col = COLORS[Math.floor(rand(0, COLORS.length))];
-  const r   = rand(26, 52);
+  const col    = COLORS[Math.floor(rand(0, COLORS.length))];
+  const r      = rand(26, 52);
+  const vy     = -(rand(24, 44));
+  const startY = spreadY ? rand(-r, h + r) : h + r * 4 + rand(0, 100);
   return {
     x:          rand(r * 2, w - r * 2),
-    y:          spreadY ? rand(-r, h + r) : h + r * 4 + rand(0, 100),
+    y:          startY,
     r,
     vx:         rand(-12, 12),
-    vy:         -(rand(24, 44)),
+    vy,
     wobble:     rand(0, Math.PI * 2),
     wobbleRate: rand(0.4, 1.2),
     hue: col.h, sat: col.s, lit: col.l,
     life:       0,
-    maxLife:    rand(7, 14),
+    maxLife:    (startY + r * 4) / Math.abs(vy) * rand(1.05, 1.15),
   };
 }
 

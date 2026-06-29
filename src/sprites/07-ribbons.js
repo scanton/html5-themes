@@ -20,24 +20,26 @@ const COLORS = [
 ];
 
 function makeRibbon(w, h, spreadY) {
-  const col = COLORS[Math.floor(rand(0, COLORS.length))];
-  const len = rand(55, 135);
+  const col    = COLORS[Math.floor(rand(0, COLORS.length))];
+  const len    = rand(55, 135);
+  const vy     = rand(50, 115);
+  const startY = spreadY ? rand(-len, h) : -(len + rand(0, 80));
   return {
     x:         rand(0, w),
-    y:         spreadY ? rand(-len, h) : -(len + rand(0, 80)),
+    y:         startY,
     len,
     width:     rand(5, 13),
     vx:        rand(-28, 28),
-    vy:        rand(50, 115),
+    vy,
     rot:       rand(0, Math.PI * 2),
     rotRate:   rand(-0.7, 0.7),
     twist:     rand(0, Math.PI * 2),
     twistRate: rand(1.8, 5.5),
-    waveCyc:   rand(0.5, 1.4),    // number of sine cycles along the ribbon
-    waveAmp:   rand(0.15, 0.45),  // amplitude as fraction of length
+    waveCyc:   rand(0.5, 1.4),
+    waveAmp:   rand(0.15, 0.45),
     hue: col.h, sat: col.s, lit: col.l,
     life:      0,
-    maxLife:   rand(4, 9),
+    maxLife:   (h + 20 + len - startY) / vy * rand(1.05, 1.15),
   };
 }
 

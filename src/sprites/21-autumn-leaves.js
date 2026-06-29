@@ -23,23 +23,25 @@ const PALETTES = [
 ];
 
 function makeLeaf(w, h, spreadXY) {
-  const pal  = PALETTES[Math.floor(rand(0, PALETTES.length))];
-  const type = Math.random() < 0.55 ? 'maple' : 'oak';
-  const r    = rand(22, 44);
+  const pal    = PALETTES[Math.floor(rand(0, PALETTES.length))];
+  const type   = Math.random() < 0.55 ? 'maple' : 'oak';
+  const r      = rand(22, 44);
+  const vy     = rand(42, 98);
+  const startY = spreadXY ? rand(-r * 2, h) : -(r + rand(0, 90));
   return {
-    x:        spreadXY ? rand(r, w - r) : rand(r, w - r),
-    y:        spreadXY ? rand(-r * 2, h) : -(r + rand(0, 90)),
+    x:        rand(r, w - r),
+    y:        startY,
     r, type, pal,
     vx:       rand(-22, 22),
-    vy:       rand(42, 98),
+    vy,
     rot:      rand(0, Math.PI * 2),
-    rotRate:  rand(-1.6, 1.6) * (26 / r),  // smaller leaves spin faster
+    rotRate:  rand(-1.6, 1.6) * (26 / r),
     sway:     rand(0, Math.PI * 2),
     swayRate: rand(0.4, 1.1),
     swayAmp:  rand(12, 30),
     alpha:    rand(0.84, 1.0),
     life:     0,
-    maxLife:  rand(6, 14),
+    maxLife:  (h + r - startY) / vy * rand(1.05, 1.15),
   };
 }
 

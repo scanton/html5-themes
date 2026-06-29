@@ -17,24 +17,25 @@ const PETAL_COLORS = [
 ];
 
 function makeFlower(w, h, spreadY) {
-  const col  = PETAL_COLORS[Math.floor(rand(0, PETAL_COLORS.length))];
-  const size = rand(10, 26);
+  const col    = PETAL_COLORS[Math.floor(rand(0, PETAL_COLORS.length))];
+  const size   = rand(10, 26);
+  const vy     = rand(25, 55);
+  const startY = spreadY ? rand(-size, h + size) : -(size + rand(0, 80));
   return {
     x:          rand(size, w - size),
-    y:          spreadY ? rand(-size, h * 0.8) : -(size + rand(0, 80)),
+    y:          startY,
     size,
     vx:         rand(-20, 20),
-    vy:         rand(25, 55),
+    vy,
     rot:        rand(0, Math.PI * 2),
     rotRate:    rand(-1.2, 1.2),
     sway:       rand(0, Math.PI * 2),
     swayRate:   rand(0.5, 1.4),
     swayAmp:    rand(15, 35),
     col,
-    // Small per-petal angle offsets so the flower looks hand-made
     petalOffsets: Array.from({ length: 5 }, () => rand(-0.08, 0.08)),
     life:       0,
-    maxLife:    rand(5, 11),
+    maxLife:    (h + size - startY) / vy * rand(1.05, 1.15),
   };
 }
 

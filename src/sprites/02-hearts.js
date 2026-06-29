@@ -20,20 +20,22 @@ function heartPath(ctx, r) {
 }
 
 function makeHeart(w, h, spreadY) {
-  const r = rand(14, 38);
+  const r      = rand(14, 38);
+  const vy     = -(rand(32, 58));
+  const startY = spreadY ? rand(-r, h + r) : h + r + rand(0, 60);
   return {
     x:          rand(r, w - r),
-    y:          spreadY ? rand(-r, h + r) : h + r + rand(0, 60),
+    y:          startY,
     r,
     vx:         rand(-14, 14),
-    vy:         -(rand(32, 58)),
+    vy,
     wobble:     rand(0, Math.PI * 2),
     wobbleRate: rand(0.8, 2.2),
-    tilt:       rand(-0.22, 0.22),           // slight permanent tilt
-    hue:        rand(340, 360),              // deep red → pink-red
+    tilt:       rand(-0.22, 0.22),
+    hue:        rand(340, 360),
     sat:        rand(88, 100),
     life:       0,
-    maxLife:    rand(5, 10),
+    maxLife:    (startY + r) / Math.abs(vy) * rand(1.05, 1.15),
   };
 }
 

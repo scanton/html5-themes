@@ -10,21 +10,23 @@ export const name = 'Snowflakes';
 function rand(min, max) { return min + Math.random() * (max - min); }
 
 function makeFlake(w, h, spreadY) {
-  const r = rand(10, 44);
+  const r      = rand(10, 44);
+  const vy     = rand(28, 60) * (0.5 + r / 88);
+  const startY = spreadY ? rand(-h * 0.1, h + r) : -(r + rand(0, 60));
   return {
     x:        rand(r, w - r),
-    y:        spreadY ? rand(-h * 0.1, h + r) : -(r + rand(0, 60)),
+    y:        startY,
     r,
     vx:       rand(-20, 20),
-    vy:       rand(28, 60) * (0.5 + r / 88),  // larger = faster
+    vy,
     rot:      rand(0, Math.PI * 2),
     rotRate:  rand(-0.5, 0.5) * (0.4 / Math.max(r, 10)),
     drift:    rand(0, Math.PI * 2),
     driftRate:rand(0.3, 0.9),
-    brightness: rand(0.70, 1.0),              // slight colour variation
+    brightness: rand(0.70, 1.0),
     alpha:    rand(0.70, 0.95),
     life:     0,
-    maxLife:  rand(7, 16),
+    maxLife:  (h + r - startY) / vy * rand(1.05, 1.15),
   };
 }
 

@@ -9,20 +9,22 @@ export const name = 'Bubbles';
 function rand(min, max) { return min + Math.random() * (max - min); }
 
 function makeBubble(w, h, spreadY) {
-  const r = rand(22, 64);
+  const r      = rand(22, 64);
+  const vy     = -(rand(38, 72));
+  const startY = spreadY ? rand(-r, h + r) : h + r + rand(0, 80);
   return {
     x:          rand(r, w - r),
-    y:          spreadY ? rand(-r, h + r) : h + r + rand(0, 80),
+    y:          startY,
     r,
-    vx:         rand(-18, 18),               // base horizontal drift px/s
-    vy:         -(rand(38, 72)),             // rise speed px/s
-    wobble:     rand(0, Math.PI * 2),        // phase for horizontal sway
-    wobbleRate: rand(0.6, 1.8),              // rad/s
-    hue:        rand(0, 360),                // iridescent base hue
-    hueSpread:  rand(60, 150),               // how far the hue rotates around the ring
+    vx:         rand(-18, 18),
+    vy,
+    wobble:     rand(0, Math.PI * 2),
+    wobbleRate: rand(0.6, 1.8),
+    hue:        rand(0, 360),
+    hueSpread:  rand(60, 150),
     alpha:      rand(0.55, 0.82),
     life:       0,
-    maxLife:    rand(5, 11),
+    maxLife:    (startY + r) / Math.abs(vy) * rand(1.05, 1.15),
   };
 }
 

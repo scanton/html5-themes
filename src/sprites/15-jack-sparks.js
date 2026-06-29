@@ -14,12 +14,15 @@ const TRAIL = 6;
 
 function makeSpark(w, h, spreadY) {
   const isOrange = Math.random() < 0.65;
+  const r      = isOrange ? rand(2, 5) : rand(3, 7);
+  const vy     = -(rand(75, 130));
+  const startY = spreadY ? rand(0, h + 20) : h + rand(0, 30);
   return {
     x:         rand(w * 0.15, w * 0.85),
-    y:         spreadY ? rand(h * 0.3, h + 20) : h + rand(0, 30),
-    r:         isOrange ? rand(2, 5) : rand(3, 7),
+    y:         startY,
+    r,
     vx:        rand(-30, 30),
-    vy:        -(rand(40, 100)),
+    vy,
     wobble:    rand(0, Math.PI * 2),
     wobbleRate:rand(2, 6),
     isOrange,
@@ -27,7 +30,7 @@ function makeSpark(w, h, spreadY) {
     flickRate: rand(8, 20),
     trail:     [],
     life:      0,
-    maxLife:   rand(1.5, 4.5),
+    maxLife:   (startY + r) / Math.abs(vy) * rand(1.3, 1.7),
   };
 }
 
@@ -51,7 +54,7 @@ export function update(state, dt, elapsed, density = 1) {
     s.wobble  += s.wobbleRate * dt;
     s.flicker += s.flickRate  * dt;
     s.vx      += Math.sin(s.wobble) * 18 * dt;
-    s.vy      += 12 * dt;           // slight gravity drag
+    s.vy      += 8 * dt;
     s.vx      *= (1 - dt * 0.5);
 
     s.trail.push({ x: s.x, y: s.y });

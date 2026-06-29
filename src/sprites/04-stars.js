@@ -18,28 +18,30 @@ const PALETTES = [
 ];
 
 function makeStar(w, h, spreadY) {
-  const r    = rand(8, 30);
-  const pal  = PALETTES[Math.floor(rand(0, PALETTES.length))];
-  const type = Math.random() < 0.55 ? 'sparkle' : 'star';
+  const r      = rand(8, 30);
+  const pal    = PALETTES[Math.floor(rand(0, PALETTES.length))];
+  const type   = Math.random() < 0.55 ? 'sparkle' : 'star';
+  const vy     = rand(22, 52) * (0.4 + r / 60);
+  const startY = spreadY ? rand(-r, h + r) : -(r + rand(0, 80));
   return {
     x:          rand(r, w - r),
-    y:          spreadY ? rand(-h * 0.1, h * 0.6) : -(r + rand(0, 80)),
+    y:          startY,
     r,
     type,
     vx:         rand(-16, 16),
-    vy:         rand(22, 52) * (0.4 + r / 60),
+    vy,
     rot:        rand(0, Math.PI * 2),
     rotRate:    rand(-1.2, 1.2) * (0.5 / Math.max(r, 8)),
     drift:      rand(0, Math.PI * 2),
     driftRate:  rand(0.4, 1.1),
     twinkle:    rand(0, Math.PI * 2),
-    twinkleRate:rand(3, 8),                  // fast inner pulse
+    twinkleRate:rand(3, 8),
     hue:        pal.h,
     sat:        pal.s,
     lit:        pal.l,
     alpha:      rand(0.75, 1.0),
     life:       0,
-    maxLife:    rand(5, 12),
+    maxLife:    (h + r - startY) / vy * rand(1.05, 1.15),
   };
 }
 

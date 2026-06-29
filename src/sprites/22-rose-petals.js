@@ -18,27 +18,27 @@ const PALETTES = [
 ];
 
 function makePetal(w, h, spreadXY) {
-  const pal = PALETTES[Math.floor(rand(0, PALETTES.length))];
-  const r   = rand(16, 30);
+  const pal    = PALETTES[Math.floor(rand(0, PALETTES.length))];
+  const r      = rand(16, 30);
+  const vy     = rand(26, 58);
+  const startY = spreadXY ? rand(-r, h) : -(r + rand(0, 70));
   return {
     x:         rand(r, w - r),
-    y:         spreadXY ? rand(-r, h) : -(r + rand(0, 70)),
+    y:         startY,
     r, pal,
-    // slip: petals slide sideways as they rock (leaf-fall physics)
-    vy:        rand(26, 58),
+    vy,
     drift:     rand(-12, 12),
     baseRot:   rand(0, Math.PI * 2),
     rock:      rand(0, Math.PI * 2),
     rockRate:  rand(0.8, 1.8),
     rockAmp:   rand(0.3, 0.7),
-    // flip: 3D tumble — scaleY oscillates through ~0 (edge-on)
     flip:      rand(0, Math.PI * 2),
     flipRate:  rand(0.6, 1.6),
-    ruffle:    rand(0, Math.PI * 2),   // shape variation seed
-    notch:     rand(0.3, 0.85),        // outer edge notch depth
+    ruffle:    rand(0, Math.PI * 2),
+    notch:     rand(0.3, 0.85),
     alpha:     rand(0.85, 1.0),
     life:      0,
-    maxLife:   rand(8, 16),
+    maxLife:   (h + r - startY) / vy * rand(1.6, 2.0),
   };
 }
 
